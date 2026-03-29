@@ -47,3 +47,28 @@ a {
     color-scheme: dark;
   }
 }
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0D0D0D;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #492A17;
+  border-radius: 4px;
+  border: 2px solid #0D0D0D;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #693519;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #492A17 #0D0D0D;
+}

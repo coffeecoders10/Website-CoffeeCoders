@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins, Josefin_Sans, Great_Vibes } from "next/font/google";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import Providers from "./providers";
+import "./globals.css";
 
 // Primary font — Poppins (body, UI)
 const poppins = Poppins({
