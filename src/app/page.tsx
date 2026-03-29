@@ -1,66 +1,61 @@
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
 import Image from "next/image";
-import styles from "./page.module.css";
+
+import { FadeIn } from "@/components";
+import DemoSections from "./DemoSections";
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+      {/* Navbar */}
+      <AppBar position="static">
+        <Toolbar sx={{ gap: 2 }}>
+          <Image
+            src="/coffeecoders_logo.png"
+            alt="CoffeeCoders logo"
+            width={36}
+            height={36}
+          />
+          <Typography variant="h6" component="div">
+            CoffeeCoders
+          </Typography>
+        </Toolbar>
+      </AppBar>
+
+      {/* Hero — FadeIn on load */}
+      <FadeIn onLoadOnly delay={100}>
+        <Box
+          component="section"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "calc(100vh - 64px)",
+            px: 3,
+            textAlign: "center",
+          }}
+        >
+          <Typography
+            variant="h1"
+            sx={{ fontSize: { xs: "2.5rem", md: "4rem" }, mb: 2 }}
           >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            TITLE
+          </Typography>
+          <Typography
+            variant="subtitle1"
+            sx={{ fontSize: { xs: "1rem", md: "1.25rem" } }}
           >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            Subtitle
+          </Typography>
+        </Box>
+      </FadeIn>
+
+      {/* All interactive demo sections */}
+      <DemoSections />
+    </Box>
   );
 }
