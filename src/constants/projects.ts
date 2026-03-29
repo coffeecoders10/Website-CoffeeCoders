@@ -16,7 +16,7 @@ export const PROJECTS: Project[] = [
   },
   {
     tag: "AI / ML",
-    title: "Game Authoring Agentic Tool",
+    title: "Game Agentic Tool",
     body: "An agentic AI tool that helps authors design, prototype, and iterate on game mechanics using large language models.",
     cta: "View project",
     href: "https://github.com/CoffeeCoders",

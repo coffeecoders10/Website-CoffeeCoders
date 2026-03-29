@@ -78,7 +78,7 @@ export default function Home() {
         <Container maxWidth="lg" sx={{ mb: 8, mt: 10 }}>
           <Box component="section" sx={{ px: { xs: 3, md: 8 }, mx: "auto" }}>
             <GalleryGrid
-              columns={3}
+              columns={{ xs: 1, md: 3 }}
               gap={3}
               items={PROJECTS.map((project, i) => (
                 <FadeIn key={project.title} delay={i * 80}>

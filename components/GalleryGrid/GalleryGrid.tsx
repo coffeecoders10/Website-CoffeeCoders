@@ -9,8 +9,8 @@ import { SxProps, Theme } from '@mui/material/styles';
 interface GalleryGridProps {
   /** Items to render inside the grid cells */
   items: ReactNode[];
-  /** Number of columns */
-  columns?: number;
+  /** Number of columns (responsive object or number) */
+  columns?: number | Partial<Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', number>>;
   /** Number of rows per page. If undefined, all items show at once */
   rows?: number;
   /** Enable pagination */
@@ -33,7 +33,8 @@ export default function GalleryGrid({
 }: GalleryGridProps) {
   const [page, setPage] = useState(0);
 
-  const pageSize = pagination && rows ? columns * rows : items.length;
+  const columnsNum = typeof columns === 'number' ? columns : (columns?.md ?? columns?.lg ?? 3);
+  const pageSize = pagination && rows ? columnsNum * rows : items.length;
   const totalPages = Math.ceil(items.length / pageSize);
   const pageItems = pagination
     ? items.slice(page * pageSize, page * pageSize + pageSize)
@@ -45,7 +46,11 @@ export default function GalleryGrid({
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: `repeat(${columns}, 1fr)`,
+          gridTemplateColumns: typeof columns === 'number'
+            ? `repeat(${columns}, 1fr)`
+            : Object.fromEntries(
+                Object.entries(columns as Record<string, number>).map(([bp, n]) => [bp, `repeat(${n}, 1fr)`])
+              ),
           gridTemplateRows: rows ? `repeat(${rows}, auto)` : undefined,
           gap,
         }}
