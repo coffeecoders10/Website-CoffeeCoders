@@ -53,6 +53,7 @@ export default function GalleryGrid({
               ),
           gridTemplateRows: rows ? `repeat(${rows}, auto)` : undefined,
           gap,
+          justifyContent: 'center',
         }}
       >
         {pageItems.map((item, i) => (
