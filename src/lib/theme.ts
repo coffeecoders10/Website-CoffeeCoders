@@ -2,6 +2,15 @@
 
 import { createTheme } from "@mui/material/styles";
 
+declare module "@mui/material/styles" {
+  interface TypeBackground {
+    surface: string;
+  }
+  interface TypeText {
+    dark: string;
+  }
+}
+
 const theme = createTheme({
   typography: {
     fontFamily: "var(--font-primary), sans-serif",
@@ -15,10 +24,10 @@ const theme = createTheme({
   palette: {
     mode: "dark",
     primary: {
-      main: "#A16745",
-      light: "#C4896A",
-      dark: "#693519",
-      contrastText: "#F5EDE6",
+      main: "#c49b63",
+      light: "#d4b484",
+      dark: "#9a7440",
+      contrastText: "#0D0D0D",
     },
     secondary: {
       main: "#693519",
@@ -28,11 +37,12 @@ const theme = createTheme({
     },
     background: {
       default: "#0D0D0D",
-      paper: "#1A1209",
+      surface: "#2a2a2a",
     },
     text: {
       primary: "#F5EDE6",
       secondary: "#C4896A",
+       dark: "#9a7440",
     },
     divider: "#492A17",
   },

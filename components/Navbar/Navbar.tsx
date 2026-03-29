@@ -29,6 +29,8 @@ export default function Navbar() {
         backdropFilter: scrolled ? "blur(12px)" : "none",
         WebkitBackdropFilter: scrolled ? "blur(12px)" : "none",
         boxShadow: scrolled ? "0 1px 0 rgba(73, 42, 23, 0.4)" : "none",
+        borderBottom: "1px solid",
+        borderColor: "background.surface",
       }}
     >
       <Container maxWidth="md">
@@ -36,12 +38,18 @@ export default function Navbar() {
           <Image
             src="/coffeecoders_logo.png"
             alt="CoffeeCoders logo"
-            width={36}
-            height={36}
+            width={72}
+            height={72}
+            loading="eager"
           />
-          <Typography variant="h6" component="div">
-            CoffeeCoders
-          </Typography>
+          <Box sx={{ display: "flex", flexDirection: "column", lineHeight: 1, alignItems: "center" }}>
+            <Typography variant="h5" component="div" sx={{ fontWeight: 400 }}>
+              COFFEE
+            </Typography>
+            <Typography variant="subtitle1" component="div" sx={{ fontWeight: 600, letterSpacing: 6, mr: "-6px", lineHeight: 0.75 }}>
+              CODERS
+            </Typography>
+          </Box>
         </Box>
       </Container>
     </Box>
