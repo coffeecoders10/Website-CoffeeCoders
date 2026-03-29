@@ -11,7 +11,7 @@ import {
   ContentCard,
   StatCard,
   ProfileCard,
-} from "@/components";
+} from "@components";
 
 function DemoSection({
   title,

@@ -1,31 +1,15 @@
-import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Image from "next/image";
 
-import { FadeIn } from "@/components";
-import DemoSections from "./DemoSections";
+import { FadeIn, Navbar } from "@components";
 
 export default function Home() {
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
-      {/* Navbar */}
-      <AppBar position="static">
-        <Toolbar sx={{ gap: 2 }}>
-          <Image
-            src="/coffeecoders_logo.png"
-            alt="CoffeeCoders logo"
-            width={36}
-            height={36}
-          />
-          <Typography variant="h6" component="div">
-            CoffeeCoders
-          </Typography>
-        </Toolbar>
-      </AppBar>
+      <Navbar />
 
-      {/* Hero — FadeIn on load */}
+      {/* Hero */}
       <FadeIn onLoadOnly delay={100}>
         <Box
           component="section"
@@ -34,28 +18,54 @@ export default function Home() {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            minHeight: "calc(100vh - 64px)",
+            minHeight: "100vh",
             px: 3,
             textAlign: "center",
+            gap: 1,
           }}
         >
+          <Image
+            src="/coffeecoders_logo.png"
+            alt="CoffeeCoders logo"
+            width={80}
+            height={80}
+            style={{ marginBottom: "8px" }}
+          />
+
+          <Typography
+            sx={{
+              fontFamily: "var(--font-tertiary)",
+              fontSize: { xs: "2rem", md: "2.75rem" },
+              color: "text.secondary",
+              lineHeight: 1.2,
+            }}
+          >
+            Welcome to
+          </Typography>
+
           <Typography
             variant="h1"
-            sx={{ fontSize: { xs: "2.5rem", md: "4rem" }, mb: 2 }}
+            sx={{
+              fontSize: { xs: "3rem", md: "5rem" },
+              color: "primary.main",
+              lineHeight: 1,
+              mb: 1,
+            }}
           >
-            TITLE
+            CoffeeCoders
           </Typography>
+
           <Typography
             variant="subtitle1"
-            sx={{ fontSize: { xs: "1rem", md: "1.25rem" } }}
+            sx={{
+              fontSize: { xs: "1rem", md: "1.25rem" },
+              color: "text.secondary",
+            }}
           >
-            Subtitle
+            Explore our projects
           </Typography>
         </Box>
       </FadeIn>
-
-      {/* All interactive demo sections */}
-      <DemoSections />
     </Box>
   );
 }

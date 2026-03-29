@@ -1,5 +1,7 @@
 export { default as FadeIn } from './FadeIn';
 
+export { Navbar } from './Navbar';
+
 export { default as GalleryGrid } from './GalleryGrid';
 
 export { default as Carousel } from './Carousel';
