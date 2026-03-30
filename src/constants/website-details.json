@@ -3,6 +3,7 @@
     "github": "https://github.com/CoffeeCoders",
     "email": "coffeecoders@gmail.com"
   },
+  "about": "In 2018, both of us met for the first time in college. As years passed, project after project, we realized that our coding ethics and habits were inherently coordinated. As the Pandemic of 2020 hit, we had already worked on small scale projects throughout the semesters. The Pandemic gave us enough time to fool around with projects that interested us. Soon we developed project after project. We decided we needed a platform to store and recognize our work. And that is how CoffeeCoders came into existence.",
   "stats": [
     { "label": "Projects Built", "value": 12, "suffix": "+" },
     { "label": "Years Together", "value": 6 },
@@ -27,7 +28,7 @@
       "website": "https://sarveshwanode.vercel.app"
     }
   ],
-  "projects": [
+  "live_projects": [
     {
       "tag": "Web App",
       "title": "CoffeeCoders Website",
@@ -67,7 +68,7 @@
       "cta": "View project"
     }
   ],
-  "archivedProjects": [
+  "projects": [
     {
       "tag": "Web App",
       "title": "Portfolio v1",

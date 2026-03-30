@@ -23,16 +23,9 @@ export interface Project {
   href?: string;
 }
 
-export interface ArchivedProject {
-  tag: string;
-  title: string;
-  body: string;
-  cta: string;
-  href?: string;
-}
-
 export const SOCIALS = data.socials;
+export const ABOUT: string = data.about;
 export const STATS: Stat[] = data.stats;
 export const TEAM: TeamMember[] = data.team;
+export const LIVE_PROJECTS: Project[] = data.live_projects;
 export const PROJECTS: Project[] = data.projects;
-export const ARCHIVED_PROJECTS: ArchivedProject[] = data.archivedProjects;

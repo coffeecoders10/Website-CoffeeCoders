@@ -15,15 +15,15 @@ import {
   Footer,
   AnimatedStat,
 } from "@components";
-import { PROJECTS, ARCHIVED_PROJECTS, STATS, TEAM } from "@/constants/details";
+import { LIVE_PROJECTS, PROJECTS, ABOUT, STATS, TEAM } from "@/constants/details";
 import { Container } from "@mui/material";
 
 const PROJECTS_PER_PAGE = 4;
 
 export default function Home() {
   const [archivedPage, setArchivedPage] = useState(1);
-  const archivedPageCount = Math.ceil(ARCHIVED_PROJECTS.length / PROJECTS_PER_PAGE);
-  const pagedArchivedProjects = ARCHIVED_PROJECTS.slice(
+  const archivedPageCount = Math.ceil(PROJECTS.length / PROJECTS_PER_PAGE);
+  const pagedArchivedProjects = PROJECTS.slice(
     (archivedPage - 1) * PROJECTS_PER_PAGE,
     archivedPage * PROJECTS_PER_PAGE
   );
@@ -125,7 +125,7 @@ export default function Home() {
             <GalleryGrid
               columns={{ xs: 1, md: 3 }}
               gap={3}
-              items={PROJECTS.map((project, i) => (
+              items={LIVE_PROJECTS.map((project, i) => (
                 <FadeIn key={project.title} delay={i * 80}>
                   <ContentCard
                     title={project.title}
@@ -242,15 +242,7 @@ export default function Home() {
                   lineHeight: 1.9,
                 }}
               >
-                In 2018, both of us met for the first time in college. As years
-                passed, project after project, we realized that our coding
-                ethics and habits were inherently coordinated. As the Pandemic
-                of 2020 hit, we had already worked on small scale projects
-                throughout the semesters. The Pandemic gave us enough time to
-                fool around with projects that interested us. Soon we developed
-                project after project. We decided we needed a platform to store
-                and recognize our work. And that is how CoffeeCoders came into
-                existence.
+                {ABOUT}
               </Typography>
             </Box>
           </Box>
