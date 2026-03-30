@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import Pagination from "@mui/material/Pagination";
 import Image from "next/image";
 
 import {
@@ -19,7 +21,16 @@ import { STATS } from "@/constants/stats";
 import { TEAM } from "@/constants/team";
 import { Container } from "@mui/material";
 
+const PROJECTS_PER_PAGE = 4;
+
 export default function Home() {
+  const [archivedPage, setArchivedPage] = useState(1);
+  const archivedPageCount = Math.ceil(ARCHIVED_PROJECTS.length / PROJECTS_PER_PAGE);
+  const pagedArchivedProjects = ARCHIVED_PROJECTS.slice(
+    (archivedPage - 1) * PROJECTS_PER_PAGE,
+    archivedPage * PROJECTS_PER_PAGE
+  );
+
   return (
     <Box sx={{ bgcolor: "background.default" }}>
       <Navbar />
@@ -291,7 +302,7 @@ export default function Home() {
               <GalleryGrid
                 columns={{ xs: 1, md: 2 }}
                 gap={3}
-                items={ARCHIVED_PROJECTS.map((project, i) => (
+                items={pagedArchivedProjects.map((project, i) => (
                   <FadeIn key={project.title} delay={i * 80}>
                     <ContentCard
                       title={project.title}
@@ -307,6 +318,16 @@ export default function Home() {
                   </FadeIn>
                 ))}
               />
+              {archivedPageCount > 1 && (
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 6 }}>
+                  <Pagination
+                    count={archivedPageCount}
+                    page={archivedPage}
+                    onChange={(_, page) => setArchivedPage(page)}
+                    color="primary"
+                  />
+                </Box>
+              )}
             </Box>
           </Box>
         </Container>

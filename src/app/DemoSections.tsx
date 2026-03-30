@@ -9,7 +9,6 @@ import {
   GalleryGrid,
   Carousel,
   ContentCard,
-  StatCard,
   ProfileCard,
 } from "@components";
 
@@ -108,7 +107,6 @@ export default function DemoSections() {
         >
           <FadeIn delay={200}>
             <ContentCard
-              tag="Feature"
               title="Content Card"
               body="A text-first card with an accent border, tag chip, and a CTA."
               cta="Learn more"
@@ -116,23 +114,10 @@ export default function DemoSections() {
             />
           </FadeIn>
           <FadeIn delay={400}>
-            <StatCard
-              label="Total Users"
-              value="12,480"
-              trend="+8.3%"
-              trendDirection="positive"
-              icon="☕"
-            />
-          </FadeIn>
-          <FadeIn delay={600}>
             <ProfileCard
               name="Jane Doe"
               role="Lead Designer"
               bio="Crafting beautiful interfaces one pixel at a time."
-              actions={[
-                { label: "Follow", onClick: () => {}, variant: "contained" },
-                { label: "Message", onClick: () => {}, variant: "outlined" },
-              ]}
             />
           </FadeIn>
         </Box>

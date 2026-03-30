@@ -35,4 +35,18 @@ export const ARCHIVED_PROJECTS: ArchivedProject[] = [
     cta: "View on GitHub",
     href: "https://github.com/CoffeeCoders",
   },
+  {
+    tag: "CLI Tool",
+    title: "Dev Setup CLI",
+    body: "A command-line tool that bootstraps a new dev machine with dotfiles, package installs, and shell config in one command.",
+    cta: "View on GitHub",
+    href: "https://github.com/CoffeeCoders",
+  },
+  {
+    tag: "Discord Bot",
+    title: "StudyBot",
+    body: "A Discord bot that runs Pomodoro timers, tracks study streaks, and posts daily challenges to keep your server accountable.",
+    cta: "View on GitHub",
+    href: "https://github.com/CoffeeCoders",
+  },
 ];
