@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -10,11 +10,29 @@ import {
 } from "@mui/material";
 import AdminDashboard from "./AdminDashboard";
 import { Navbar, Footer } from "@components";
+import defaultData from "@/constants/website-details.json";
 
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const [error, setError] = useState(false);
+  const [socials, setSocials] = useState(defaultData.socials);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch("/api/details?id=1");
+        if (res.ok) {
+          const json = await res.json();
+          const pjson = json.pjson ?? json;
+          if (pjson?.socials) setSocials(pjson.socials);
+        }
+      } catch {
+        // keep default
+      }
+    }
+    load();
+  }, []);
 
   function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -34,7 +52,7 @@ export default function AdminPage() {
           <AdminDashboard />
         </Box>
         
-        <Footer />
+        <Footer github={socials.github} email={socials.email} />
       </Box>
     );
   }
@@ -78,7 +96,7 @@ export default function AdminPage() {
           </Box>
         </Box>
       </Box>
-      <Footer />
+      <Footer github={socials.github} email={socials.email} />
     </Box>
   );
 }

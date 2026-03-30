@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
+import DownloadIcon from "@mui/icons-material/Download";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import defaultData from "@/constants/website-details.json";
 
@@ -400,7 +401,23 @@ export default function AdminDashboard() {
       </Accordion>
 
       {/* Bottom save */}
-      <Box mt={4} display="flex" justifyContent="flex-end" alignItems="center" gap={2}>
+      <Box mt={4} display="flex" justifyContent="space-between" alignItems="center" gap={2}>
+        <Button
+          variant="outlined"
+          startIcon={<DownloadIcon />}
+          onClick={() => {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "website-details.json";
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
+        >
+          Download JSON
+        </Button>
+        <Box display="flex" alignItems="center" gap={2}>
         {saveStatus === "saved" && <Alert severity="success" sx={{ py: 0 }}>Saved!</Alert>}
         {saveStatus === "error" && <Alert severity="error" sx={{ py: 0 }}>Save failed.</Alert>}
         <Button
@@ -412,6 +429,7 @@ export default function AdminDashboard() {
         >
           {saveStatus === "saving" ? "Saving…" : "Save"}
         </Button>
+        </Box>
       </Box>
     </Box>
   );

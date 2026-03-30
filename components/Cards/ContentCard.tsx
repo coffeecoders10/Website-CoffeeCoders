@@ -23,6 +23,7 @@ export default function ContentCard({
 }: ContentCardProps) {
   return (
     <Box
+      onClick={onCtaClick}
       sx={{
         position: 'relative',
         overflow: 'hidden',
@@ -35,6 +36,7 @@ export default function ContentCard({
         border: '2px solid',
         borderColor: 'divider',
         transition: 'box-shadow 0.2s',
+        cursor: onCtaClick ? 'pointer' : 'default',
         '&:hover': {
           boxShadow: '0 4px 24px rgba(161,103,69,0.15)',
           '& .bg-icon': {

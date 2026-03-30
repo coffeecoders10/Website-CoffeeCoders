@@ -7,9 +7,13 @@ import Container from '@mui/material/Container';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import EmailIcon from '@mui/icons-material/Email';
 import Image from 'next/image';
-import { SOCIALS } from '@/constants/details';
 
-export default function Footer() {
+interface FooterProps {
+  github: string;
+  email: string;
+}
+
+export default function Footer({ github, email }: FooterProps) {
   return (
     <Box
       component="footer"
@@ -52,7 +56,7 @@ export default function Footer() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <IconButton
               component="a"
-              href={SOCIALS.github}
+              href={github}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="GitHub"
@@ -62,7 +66,7 @@ export default function Footer() {
             </IconButton>
             <IconButton
               component="a"
-              href={`mailto:${SOCIALS.email}`}
+              href={`mailto:${email}`}
               aria-label="Email"
               sx={{ color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
             >

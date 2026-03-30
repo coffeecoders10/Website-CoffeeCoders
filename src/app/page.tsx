@@ -412,7 +412,7 @@ export default function Home() {
       </FadeIn>
 
       {/* Footer */}
-      <Footer />
+      <Footer github={data.socials.github} email={data.socials.email} />
     </Box>
   );
 }
