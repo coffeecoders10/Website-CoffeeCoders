@@ -20,3 +20,6 @@ export type {
   StatCardProps,
   ProfileCardProps,
 } from './Cards';
+
+export { AnimatedStat } from './AnimatedStat';
+export type { AnimatedStatProps } from './AnimatedStat';

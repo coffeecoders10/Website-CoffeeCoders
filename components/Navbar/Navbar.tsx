@@ -33,7 +33,7 @@ export default function Navbar() {
         borderColor: "background.surface",
       }}
     >
-      <Container maxWidth="md">
+      <Container maxWidth="lg">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, py: 1.5 }}>
           <Image
             src="/coffeecoders_logo.png"
