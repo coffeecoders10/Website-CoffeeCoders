@@ -5,6 +5,7 @@ import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -35,21 +36,23 @@ export default function Navbar() {
     >
       <Container maxWidth="lg">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, py: 1.5 }}>
-          <Image
-            src="/coffeecoders_logo.png"
-            alt="CoffeeCoders logo"
-            width={72}
-            height={72}
-            loading="eager"
-          />
-          <Box sx={{ display: "flex", flexDirection: "column", lineHeight: 1, alignItems: "center" }}>
-            <Typography variant="h5" component="div" sx={{ fontWeight: 400 }}>
-              COFFEE
-            </Typography>
-            <Typography variant="subtitle1" component="div" sx={{ fontWeight: 600, letterSpacing: 6, mr: "-6px", lineHeight: 0.75 }}>
-              CODERS
-            </Typography>
-          </Box>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none", color: "inherit" }}>
+            <Image
+              src="/coffeecoders_logo.png"
+              alt="CoffeeCoders logo"
+              width={72}
+              height={72}
+              loading="eager"
+            />
+            <Box sx={{ display: "flex", flexDirection: "column", lineHeight: 1, alignItems: "center" }}>
+              <Typography variant="h5" component="div" sx={{ fontWeight: 400 }}>
+                COFFEE
+              </Typography>
+              <Typography variant="subtitle1" component="div" sx={{ fontWeight: 600, letterSpacing: 6, mr: "-6px", lineHeight: 0.75 }}>
+                CODERS
+              </Typography>
+            </Box>
+          </Link>
         </Box>
       </Container>
     </Box>

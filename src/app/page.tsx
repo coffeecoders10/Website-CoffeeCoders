@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Pagination from "@mui/material/Pagination";
+import CircularProgress from "@mui/material/CircularProgress";
 import Image from "next/image";
 
 import {
@@ -15,17 +16,54 @@ import {
   Footer,
   AnimatedStat,
 } from "@components";
-import { LIVE_PROJECTS, PROJECTS, ABOUT, STATS, TEAM } from "@/constants/details";
 import { Container } from "@mui/material";
+import defaultData from "@/constants/website-details.json";
+
+interface SiteData {
+  socials: { github: string; email: string };
+  about: string;
+  stats: { label: string; value: number; suffix?: string }[];
+  team: { name: string; role: string; bio: string; avatarSrc?: string; github?: string; website?: string }[];
+  live_projects: { title: string; body: string; cta: string; href?: string }[];
+  projects: { title: string; body: string; cta: string; href?: string }[];
+}
 
 const PROJECTS_PER_PAGE = 4;
 
 export default function Home() {
-  const [archivedPage, setArchivedPage] = useState(1);
-  const archivedPageCount = Math.ceil(PROJECTS.length / PROJECTS_PER_PAGE);
-  const pagedArchivedProjects = PROJECTS.slice(
-    (archivedPage - 1) * PROJECTS_PER_PAGE,
-    archivedPage * PROJECTS_PER_PAGE
+  const [data, setData] = useState<SiteData | null>(null);
+  const [projectsPage, setProjectsPage] = useState(1);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch("/api/details?id=1");
+        if (res.ok) {
+          const json = await res.json();
+          setData(json.pjson ?? json);
+        } else {
+          setData(defaultData as SiteData);
+        }
+      } catch {
+        setData(defaultData as SiteData);
+      }
+    }
+    load();
+  }, []);
+
+  if (!data) {
+    return (
+      <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  const { about, stats, team, live_projects, projects } = data;
+  const projectsPageCount = Math.ceil(projects.length / PROJECTS_PER_PAGE);
+  const pagedProjects = projects.slice(
+    (projectsPage - 1) * PROJECTS_PER_PAGE,
+    projectsPage * PROJECTS_PER_PAGE
   );
 
   return (
@@ -94,7 +132,7 @@ export default function Home() {
         </Box>
       </FadeIn>
 
-      {/* Projects */}
+      {/* Live Projects */}
       <FadeIn delay={100}>
         <Container maxWidth="lg" sx={{ mb: 8, mt: 10 }}>
           <Box component="section" sx={{ px: { xs: 3, md: 8 }, mx: "auto" }}>
@@ -125,7 +163,7 @@ export default function Home() {
             <GalleryGrid
               columns={{ xs: 1, md: 3 }}
               gap={3}
-              items={LIVE_PROJECTS.map((project, i) => (
+              items={live_projects.map((project, i) => (
                 <FadeIn key={project.title} delay={i * 80}>
                   <ContentCard
                     title={project.title}
@@ -162,13 +200,13 @@ export default function Home() {
                 display: "grid",
                 gridTemplateColumns: {
                   xs: "1fr 1fr",
-                  md: `repeat(${STATS.length}, 1fr)`,
+                  md: `repeat(${stats.length}, 1fr)`,
                 },
                 gap: { xs: 6, md: 4 },
                 px: { xs: 3, md: 8 },
               }}
             >
-              {STATS.map((stat) => (
+              {stats.map((stat) => (
                 <AnimatedStat
                   key={stat.label}
                   value={stat.value}
@@ -192,7 +230,6 @@ export default function Home() {
               gap: { xs: 6, md: 6 },
             }}
           >
-            {/* Logo */}
             <Box
               sx={{
                 flex: "0 0 35%",
@@ -209,7 +246,6 @@ export default function Home() {
               />
             </Box>
 
-            {/* Text */}
             <Box sx={{ flex: "0 0 60%" }}>
               <Typography
                 sx={{
@@ -242,14 +278,14 @@ export default function Home() {
                   lineHeight: 1.9,
                 }}
               >
-                {ABOUT}
+                {about}
               </Typography>
             </Box>
           </Box>
         </Container>
       </FadeIn>
 
-      {/* Archived Projects */}
+      {/* Projects */}
       <FadeIn delay={100}>
         <Container maxWidth="lg" sx={{ py: 10, px: { xs: 3, md: 1 } }}>
           <Box component="section">
@@ -276,22 +312,12 @@ export default function Home() {
               >
                 Projects
               </Typography>
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  fontSize: { xs: "1rem", md: "1.25rem" },
-                  color: "text.main",
-                  opacity: 0.7,
-                }}
-              >
-                These Projects are built, but not hosted yet.
-              </Typography>
             </Box>
             <Box sx={{ px: { xs: 0, md: 8 } }}>
               <GalleryGrid
                 columns={{ xs: 1, md: 2 }}
                 gap={3}
-                items={pagedArchivedProjects.map((project, i) => (
+                items={pagedProjects.map((project, i) => (
                   <FadeIn key={project.title} delay={i * 80}>
                     <ContentCard
                       title={project.title}
@@ -307,12 +333,12 @@ export default function Home() {
                   </FadeIn>
                 ))}
               />
-              {archivedPageCount > 1 && (
+              {projectsPageCount > 1 && (
                 <Box sx={{ display: "flex", justifyContent: "center", mt: 6 }}>
                   <Pagination
-                    count={archivedPageCount}
-                    page={archivedPage}
-                    onChange={(_, page) => setArchivedPage(page)}
+                    count={projectsPageCount}
+                    page={projectsPage}
+                    onChange={(_, page) => setProjectsPage(page)}
                     color="primary"
                   />
                 </Box>
@@ -360,7 +386,7 @@ export default function Home() {
                 display: "grid",
                 gridTemplateColumns: {
                   xs: "1fr",
-                  md: `repeat(${TEAM.length}, 1fr)`,
+                  md: `repeat(${team.length}, 1fr)`,
                 },
                 gap: 4,
                 px: { xs: 3, md: 8 },
@@ -368,7 +394,7 @@ export default function Home() {
                 mx: "auto",
               }}
             >
-              {TEAM.map((member, i) => (
+              {team.map((member, i) => (
                 <FadeIn key={member.name} delay={i * 100}>
                   <ProfileCard
                     name={member.name}
