@@ -1,0 +1,114 @@
+{
+  "socials": {
+    "github": "https://github.com/CoffeeCoders",
+    "email": "coffeecoders@gmail.com"
+  },
+  "stats": [
+    { "label": "Projects Built", "value": 12, "suffix": "+" },
+    { "label": "Years Together", "value": 6 },
+    { "label": "Cups of Coffee", "value": 1000, "suffix": "+" },
+    { "label": "Lines of Code", "value": 50, "suffix": "k+" }
+  ],
+  "team": [
+    {
+      "name": "Nitish Talekar",
+      "role": "Co-Founder & Full Stack Engineer",
+      "bio": "Passionate about building products that matter. Loves clean code, great UI, and a strong cup of coffee.",
+      "avatarSrc": "/nitish-profile.jpg",
+      "github": "https://github.com/NitishTalekar",
+      "website": "https://ntidev.vercel.app"
+    },
+    {
+      "name": "Sarvesh Wanode",
+      "role": "Co-Founder & Software Engineer",
+      "bio": "Systems thinker with a love for elegant architecture. Turns complex problems into simple, scalable solutions.",
+      "avatarSrc": "/sarvesh-profile.jpg",
+      "github": "https://github.com/SarveshWanode",
+      "website": "https://sarveshwanode.vercel.app"
+    }
+  ],
+  "projects": [
+    {
+      "tag": "Web App",
+      "title": "CoffeeCoders Website",
+      "body": "The official CoffeeCoders club website — built with Next.js and MUI, showcasing our projects, team, and community.",
+      "cta": "View project",
+      "href": "https://github.com/CoffeeCoders"
+    },
+    {
+      "tag": "AI / ML",
+      "title": "Game Agentic Tool",
+      "body": "An agentic AI tool that helps authors design, prototype, and iterate on game mechanics using large language models.",
+      "cta": "View project",
+      "href": "https://github.com/CoffeeCoders"
+    },
+    {
+      "tag": "Full Stack",
+      "title": "Dev Dashboard",
+      "body": "A real-time developer productivity dashboard that aggregates GitHub activity, CI status, and team velocity metrics.",
+      "cta": "View project"
+    },
+    {
+      "tag": "Mobile",
+      "title": "Campus Connect",
+      "body": "A mobile-first app helping students discover clubs, events, and study groups on campus with smart recommendations.",
+      "cta": "View project"
+    },
+    {
+      "tag": "Tooling",
+      "title": "CLI Scaffolder",
+      "body": "A command-line scaffolding tool that bootstraps opinionated project templates with linting, testing, and CI baked in.",
+      "cta": "View project"
+    },
+    {
+      "tag": "Open Source",
+      "title": "Component Library",
+      "body": "A shared MUI-based component library used across CoffeeCoders projects — batteries included, fully typed.",
+      "cta": "View project"
+    }
+  ],
+  "archivedProjects": [
+    {
+      "tag": "Web App",
+      "title": "Portfolio v1",
+      "body": "The first iteration of the CoffeeCoders personal portfolio — a static site built with HTML, CSS, and vanilla JS.",
+      "cta": "View on GitHub",
+      "href": "https://github.com/CoffeeCoders"
+    },
+    {
+      "tag": "Backend",
+      "title": "REST API Boilerplate",
+      "body": "An opinionated Express + TypeScript REST API starter with JWT auth, rate limiting, and Swagger docs baked in.",
+      "cta": "View on GitHub",
+      "href": "https://github.com/CoffeeCoders"
+    },
+    {
+      "tag": "Mobile",
+      "title": "Weather Buddy",
+      "body": "A React Native weather app with location-based forecasts, animated weather icons, and a clean minimal UI.",
+      "cta": "View on GitHub",
+      "href": "https://github.com/CoffeeCoders"
+    },
+    {
+      "tag": "Chrome Extension",
+      "title": "Tab Organizer",
+      "body": "A browser extension that groups, labels, and auto-suspends idle tabs to keep your workspace tidy.",
+      "cta": "View on GitHub",
+      "href": "https://github.com/CoffeeCoders"
+    },
+    {
+      "tag": "CLI Tool",
+      "title": "Dev Setup CLI",
+      "body": "A command-line tool that bootstraps a new dev machine with dotfiles, package installs, and shell config in one command.",
+      "cta": "View on GitHub",
+      "href": "https://github.com/CoffeeCoders"
+    },
+    {
+      "tag": "Discord Bot",
+      "title": "StudyBot",
+      "body": "A Discord bot that runs Pomodoro timers, tracks study streaks, and posts daily challenges to keep your server accountable.",
+      "cta": "View on GitHub",
+      "href": "https://github.com/CoffeeCoders"
+    }
+  ]
+}

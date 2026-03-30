@@ -57,7 +57,7 @@ export default function GalleryGrid({
         }}
       >
         {pageItems.map((item, i) => (
-          <Box key={i}>{item}</Box>
+          <Box key={i} sx={{ display: 'flex', '& > *': { flex: 1 } }}>{item}</Box>
         ))}
       </Box>
 

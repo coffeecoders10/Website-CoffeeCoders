@@ -7,7 +7,7 @@ import Container from '@mui/material/Container';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import EmailIcon from '@mui/icons-material/Email';
 import Image from 'next/image';
-import { SOCIALS } from '@/constants/socials';
+import { SOCIALS } from '@/constants/details';
 
 export default function Footer() {
   return (

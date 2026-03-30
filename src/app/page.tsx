@@ -15,10 +15,7 @@ import {
   Footer,
   AnimatedStat,
 } from "@components";
-import { PROJECTS } from "@/constants/projects";
-import { ARCHIVED_PROJECTS } from "@/constants/archived-projects";
-import { STATS } from "@/constants/stats";
-import { TEAM } from "@/constants/team";
+import { PROJECTS, ARCHIVED_PROJECTS, STATS, TEAM } from "@/constants/details";
 import { Container } from "@mui/material";
 
 const PROJECTS_PER_PAGE = 4;
