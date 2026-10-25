@@ -22,7 +22,7 @@ Use theme tokens (`"primary.main"`, `"text.secondary"`, `"divider"`), not raw he
 | `background.default` | `#0D0D0D` | Page background (set on the root `Box` of each page) |
 | `background.surface` | `#2a2a2a` | Card fills (at low alpha), nav border. Custom key, typed in theme.ts |
 | `primary.main` | `#c49b63` | Gold. Stat numbers, links on hover, active pagination, buttons |
-| `primary.light` | `#d4b484` | Card CTA text |
+| `primary.light` | `#d4b484` | Highlights, icon accents |
 | `primary.dark` | `#9a7440` | Pressed/dark gold |
 | `secondary.main` | `#693519` | Brown. Scrollbar hover |
 | `secondary.dark` | `#492A17` | Profile card placeholder fill, scrollbar thumb |
@@ -96,14 +96,15 @@ All live in `components/<Name>/` with an `index.ts`, and are re-exported from [c
 
 | Component | Use | Notes |
 |---|---|---|
-| `Navbar` | Fixed top bar with logo + wordmark | Transparent at top; glass blur after 10px scroll, reading-progress line. Optional `links` prop adds in-page anchors (desktop underline, mobile hamburger menu, active-section highlight). Include on every page |
+| `Navbar` | Fixed top bar with logo + wordmark | Transparent at top; glass blur after 10px scroll, reading-progress line. Optional `links` prop (`{label, href, icon}`) adds in-page anchors: text links with a hover underline on desktop, icon-only links in the bar on phones (no hamburger), active-section highlight. Include on every page |
 | `Footer` | Logo, GitHub and email icons, © year | Takes `github` and `email` props from site data |
 | `FadeIn` | Scroll-triggered fade and 20px rise | Props: `delay`, `duration` (700ms), `offsetY`, `onLoadOnly` (use for above-the-fold). Respects reduced motion. Wrap section headers and cards, not both a section and its cards |
 | `SectionHeader` | Script eyebrow over uppercase `h2` | Props: `eyebrow`, `title`, `align`. Use instead of hand-writing the header pattern |
-| `ContentCard` | Title, body, CTA text | Pass `href` to make the whole card a real link (new tab). `onCtaClick` still works and adds keyboard support. Lifts on hover (hover-capable devices only) |
+| `ContentCard` | Title, body, a line-drawn coffee vessel icon above the title (`icon` prop: a name or a number that cycles; the admin stores a name per project in `icon`, blank = cycle), then a dashed rule with a slanted arrow on the right | Pass `href` to make the whole card a real link (new tab); There is no button label. `onCtaClick` still works. A faint coffee-ring stain sits in the corner. Hover/focus (hover-capable devices): a dim brown glow follows the cursor, the card lifts, steam fades in above the mug and the arrow lifts |
 | `ProfileCard` | 3:4 portrait with gradient overlay, name/role, bio revealed on hover/focus (always visible on touch), GitHub/website icon links | Falls back to `secondary.dark` when no `avatarSrc` |
 | `GalleryGrid` | Responsive grid with optional paging (numbers or dots) | Passing `columns` as an object, paging uses the `md` count |
 | `Carousel` | `interaction` (arrows/dots) or `continuous` (marquee, pauses on hover) | |
+| `CoffeeIcon` | Line-drawn coffee vessels: mug, takeaway, espresso, frenchPress, flask, moka, pourOver, latte | `type` (name or cycling number), `size`. Steam wisps have class `steam-wisp` and start hidden; a parent reveals them on hover |
 | `AnimatedStat` | Count-up number when scrolled into view | Gold number over secondary label |
 
 Before adding a component, check whether one of these (or a prop on one) covers it.
@@ -118,11 +119,13 @@ Before adding a component, check whether one of these (or a prop on one) covers 
 
 ## Content and data
 
-- All site copy lives in one JSON document: shape in [src/constants/website-details.json](src/constants/website-details.json), type `SiteData` (`socials`, `about`, `stats`, `team`, `live_projects`, `projects`).
+- All site copy lives in one JSON document: shape in [src/constants/website-details.json](src/constants/website-details.json), type `SiteData` (`socials`, `about`, `team`, `live_projects`, `projects`; each project has `title`, `body`, `href`, `icon`).
 - The document lives in Backbone (table `BACKBONE_SITE_TABLE`, row `BACKBONE_SITE_DETAILS_ID`), accessed only server-side via [src/lib/backbone.ts](src/lib/backbone.ts). Pages load it from `GET /api/details` and fall back to the bundled JSON on failure or 404. The admin dashboard (`/admin`, Backbone user login, restricted to `ADMIN_USERNAMES`, with a signed session cookie from [src/lib/session.ts](src/lib/session.ts)) edits and saves it.
 - A new content section should add a field to `SiteData`, to the JSON default, and to the admin editor, so it stays editable. Do not hard-code copy in JSX.
 - Voice: friendly, short, coffee-flavored ("The place where Caffine creates Code").
 - Static assets are in `public/`. Logo is `/coffeecoders_logo.png`; team photos are `/<name>-profile.jpg`.
+
+Home page stats are not stored. [src/lib/stats.ts](src/lib/stats.ts) calculates them: projects = live + other projects, years = current year minus 2018, lines of code = projects x 7,200 (in thousands), cups of coffee = 1000+.
 
 ## Forms and admin UI
 

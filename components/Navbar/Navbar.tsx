@@ -1,13 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, ReactNode } from "react";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import Collapse from "@mui/material/Collapse";
-import MenuIcon from "@mui/icons-material/Menu";
-import CloseIcon from "@mui/icons-material/Close";
+import Tooltip from "@mui/material/Tooltip";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -15,6 +12,8 @@ export interface NavLink {
   label: string;
   /** In-page anchor such as "#projects" */
   href: string;
+  /** Shown instead of the text on small screens */
+  icon?: ReactNode;
 }
 
 interface NavbarProps {
@@ -26,7 +25,6 @@ const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 
 export default function Navbar({ links = [] }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
   const [active, setActive] = useState<string>("");
   const progressRef = useRef<HTMLDivElement>(null);
 
@@ -72,15 +70,7 @@ export default function Navbar({ links = [] }: NavbarProps) {
     return () => observer.disconnect();
   }, [links]);
 
-  // Escape closes the mobile menu
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
-
-  const glass = scrolled || open;
+  const glass = scrolled;
 
   return (
     <Box
@@ -113,7 +103,7 @@ export default function Navbar({ links = [] }: NavbarProps) {
           <Link
             href="/"
             aria-label="CoffeeCoders home"
-            style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none", color: "inherit" }}
+            style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", color: "inherit" }}
           >
             <Image
               src="/coffeecoders_logo.png"
@@ -121,114 +111,86 @@ export default function Navbar({ links = [] }: NavbarProps) {
               width={64}
               height={64}
               loading="eager"
-              style={{ width: scrolled ? 52 : 64, height: "auto", transition: `width 0.4s ${EASE}` }}
+              style={{ width: scrolled ? 44 : 52, height: "auto", transition: `width 0.4s ${EASE}` }}
             />
             <Box sx={{ display: "flex", flexDirection: "column", lineHeight: 1, alignItems: "center" }}>
-              <Typography variant="h5" component="div" sx={{ fontWeight: 400 }}>
+              <Typography variant="h5" component="div" sx={{ fontWeight: 400, fontSize: { xs: "1.25rem", md: "1.5rem" } }}>
                 COFFEE
               </Typography>
-              <Typography variant="subtitle1" component="div" sx={{ fontWeight: 600, letterSpacing: 6, mr: "-6px", lineHeight: 0.75 }}>
+              <Typography variant="subtitle1" component="div" sx={{ fontWeight: 600, letterSpacing: { xs: 4, md: 6 }, mr: { xs: "-4px", md: "-6px" }, fontSize: { xs: "0.85rem", md: "1rem" }, lineHeight: 0.75 }}>
                 CODERS
               </Typography>
             </Box>
           </Link>
 
           {links.length > 0 && (
-            <>
-              {/* Desktop links */}
-              <Box
-                component="ul"
-                sx={{ display: { xs: "none", md: "flex" }, listStyle: "none", gap: 4 }}
-              >
-                {links.map((link) => {
-                  const isActive = active === link.href;
-                  return (
-                    <li key={link.href}>
+            <Box
+              component="ul"
+              sx={{ display: "flex", listStyle: "none", gap: { xs: 0, md: 4 }, alignItems: "center" }}
+            >
+              {links.map((link) => {
+                const isActive = active === link.href;
+                return (
+                  <li key={link.href}>
+                    <Tooltip title={link.label} placement="bottom" enterTouchDelay={400}>
                       <Box
                         component="a"
                         href={link.href}
+                        aria-label={link.label}
                         aria-current={isActive ? "location" : undefined}
                         sx={{
                           position: "relative",
-                          display: "inline-block",
-                          py: 1,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          minWidth: { xs: 40, md: 0 },
+                          height: { xs: 44, md: "auto" },
+                          py: { md: 1 },
                           fontSize: "0.95rem",
                           fontWeight: 500,
                           letterSpacing: "0.04em",
                           color: isActive ? "primary.main" : "text.primary",
-                          transition: `color 0.3s ${EASE}`,
+                          WebkitTapHighlightColor: "transparent",
+                          transition: `color 0.3s ${EASE}, transform 0.3s ${EASE}`,
                           "&:hover": { color: "primary.main" },
+                          "&:active": { transform: "scale(0.92)" },
                           // Underline grows from the left on hover, stays when active
                           "&::after": {
                             content: '""',
                             position: "absolute",
-                            left: 0,
-                            right: 0,
-                            bottom: 2,
+                            left: { xs: 8, md: 0 },
+                            right: { xs: 8, md: 0 },
+                            bottom: { xs: 4, md: 2 },
                             height: "1px",
                             bgcolor: "primary.main",
                             transformOrigin: "left",
                             transform: isActive ? "scaleX(1)" : "scaleX(0)",
                             transition: `transform 0.4s ${EASE}`,
                           },
-                          "&:hover::after": { transform: "scaleX(1)" },
+                          "@media (hover: hover)": { "&:hover::after": { transform: "scaleX(1)" } },
                         }}
                       >
-                        {link.label}
+                        {/* Icons on phones, text from tablet up */}
+                        {link.icon && (
+                          <Box component="span" sx={{ display: { xs: "inline-flex", md: "none" }, lineHeight: 0 }}>
+                            {link.icon}
+                          </Box>
+                        )}
+                        <Box
+                          component="span"
+                          sx={{ display: { xs: link.icon ? "none" : "inline", md: "inline" } }}
+                        >
+                          {link.label}
+                        </Box>
                       </Box>
-                    </li>
-                  );
-                })}
-              </Box>
-
-              {/* Mobile toggle */}
-              <IconButton
-                onClick={() => setOpen((o) => !o)}
-                aria-label={open ? "Close menu" : "Open menu"}
-                aria-expanded={open}
-                aria-controls="mobile-menu"
-                sx={{ display: { xs: "inline-flex", md: "none" }, color: "text.primary", width: 48, height: 48 }}
-              >
-                {open ? <CloseIcon /> : <MenuIcon />}
-              </IconButton>
-            </>
+                    </Tooltip>
+                  </li>
+                );
+              })}
+            </Box>
           )}
         </Box>
 
-        {links.length > 0 && (
-          <Collapse in={open} timeout={350} unmountOnExit sx={{ display: { md: "none" } }}>
-            <Box id="mobile-menu" component="ul" sx={{ listStyle: "none", pb: 2 }}>
-              {links.map((link) => (
-                <li key={link.href}>
-                  <Box
-                    component="a"
-                    href={link.href}
-                    onClick={() => setOpen(false)}
-                    aria-current={active === link.href ? "location" : undefined}
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      minHeight: 52,
-                      px: 0.5,
-                      fontSize: "1.1rem",
-                      fontFamily: "var(--font-secondary)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.08em",
-                      color: active === link.href ? "primary.main" : "text.primary",
-                      borderTop: "1px solid",
-                      borderColor: "divider",
-                      WebkitTapHighlightColor: "transparent",
-                      transition: `color 0.25s ${EASE}, padding-left 0.3s ${EASE}`,
-                      "&:active": { color: "primary.main", pl: 1.5 },
-                    }}
-                  >
-                    {link.label}
-                  </Box>
-                </li>
-              ))}
-            </Box>
-          </Collapse>
-        )}
       </Container>
 
       {/* Reading progress */}

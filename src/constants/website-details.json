@@ -3,48 +3,48 @@
   "live_projects": [
     {
       "body": "The Game of Pictionary in a online medium (while still being offline)",
-      "cta": "View Game",
       "href": "https://coffeecoders.pythonanywhere.com/pictionary/",
+      "icon": "mug",
       "tag": "Web App",
       "title": "Pictionary Game"
     },
     {
       "body": "Bot developed to train and test different classifiers on your given data",
-      "cta": "View Bot",
       "href": "https://coffeecoders.pythonanywhere.com/classifier/",
+      "icon": "takeaway",
       "title": "Classifier Bot"
     },
     {
       "body": "Build static webpages and host them directly",
-      "cta": "View App",
       "href": "https://coffeecoders.pythonanywhere.com/webpages/",
+      "icon": "espresso",
       "title": "Static Webpage Hosting"
     }
   ],
   "projects": [
     {
       "body": "Application Converts Japanese text to English comprehension. A NLP Project",
-      "cta": "View on GitHub",
       "href": "https://github.com/coffeecoders10/JapaneseEnglishTranslator",
+      "icon": "frenchPress",
       "tag": "Web App",
       "title": "Japanese - English Translator"
     },
     {
       "body": "Application that recognizes fake product reviews and performs sentimental analysis. A ML Project.",
-      "cta": "View on Github",
       "href": "https://github.com/coffeecoders10/FakeReviewAnalysis",
+      "icon": "flask",
       "title": "Fake Review Analysis"
     },
     {
       "body": "Complete system to gather and analyze student feedback for an institute. A web application.",
-      "cta": "View on Github",
       "href": "https://github.com/coffeecoders10/FeedbackRGIT",
+      "icon": "moka",
       "title": "Institute Feedback System"
     },
     {
       "body": "System to monitor hospital status while storing and managing records. A web CMS System.",
-      "cta": "View on Github",
       "href": "https://github.com/coffeecoders10/HospitalManagement",
+      "icon": "pourOver",
       "title": "Hospital Management System"
     }
   ],
@@ -52,27 +52,6 @@
     "email": "coffeecoders10@gmail.com",
     "github": "https://github.com/coffeecoders10"
   },
-  "stats": [
-    {
-      "label": "Projects Built",
-      "suffix": "+",
-      "value": 7
-    },
-    {
-      "label": "Years Together",
-      "value": 8
-    },
-    {
-      "label": "Cups of Coffee",
-      "suffix": "+",
-      "value": 1000
-    },
-    {
-      "label": "Lines of Code",
-      "suffix": "k+",
-      "value": 50
-    }
-  ],
   "team": [
     {
       "avatarSrc": "/nitish-profile.jpg",

@@ -16,37 +16,56 @@ import {
   Footer,
   AnimatedStat,
   SectionHeader,
+  COFFEE_ICON_TYPES,
+  LiveIcon,
+  StoryIcon,
+  ProjectsIcon,
+  TeamIcon,
 } from "@components";
+import type { CoffeeIconType } from "@components";
 import { Container } from "@mui/material";
 import defaultData from "@/constants/website-details.json";
+import { computeStats } from "@/lib/stats";
+
+interface ProjectItem {
+  title: string;
+  body: string;
+  href?: string;
+  /** A CoffeeIcon name chosen in the admin; blank falls back to cycling through the set */
+  icon?: string;
+}
+
+function pickIcon(icon: string | undefined, fallback: number): CoffeeIconType | number {
+  return COFFEE_ICON_TYPES.includes(icon as CoffeeIconType) ? (icon as CoffeeIconType) : fallback;
+}
 
 interface SiteData {
   socials: { github: string; email: string };
   about: string;
-  stats: { label: string; value: number; suffix?: string }[];
   team: { name: string; role: string; bio: string; avatarSrc?: string; github?: string; website?: string }[];
-  live_projects: { title: string; body: string; cta: string; href?: string }[];
-  projects: { title: string; body: string; cta: string; href?: string }[];
+  live_projects: ProjectItem[];
+  projects: ProjectItem[];
 }
 
 const PROJECTS_PER_PAGE = 4;
 
 const NAV_LINKS = [
-  { label: "Live", href: "#live-projects" },
-  { label: "Story", href: "#story" },
-  { label: "Projects", href: "#projects" },
-  { label: "Team", href: "#team" },
+  { label: "Live", href: "#live-projects", icon: <LiveIcon /> },
+  { label: "Story", href: "#story", icon: <StoryIcon /> },
+  { label: "Projects", href: "#projects", icon: <ProjectsIcon /> },
+  { label: "Team", href: "#team", icon: <TeamIcon /> },
 ];
 
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 
 const heroButtonSx = {
-  minHeight: 52,
-  px: 4,
+  minHeight: 40,
+  py: 0.5,
+  px: 3,
   borderRadius: 999,
   textTransform: "none",
-  fontWeight: 600,
-  fontSize: "1rem",
+  fontWeight: 500,
+  fontSize: "0.95rem",
   transition: `transform 0.3s ${EASE}, box-shadow 0.3s ${EASE}, background-color 0.3s`,
   "@media (hover: hover)": {
     "&:hover": { transform: "translateY(-2px)", boxShadow: "0 8px 24px rgba(196,155,99,0.22)" },
@@ -99,7 +118,8 @@ export default function Home() {
     );
   }
 
-  const { about, stats, team, live_projects, projects } = data;
+  const { about, team, live_projects, projects } = data;
+  const stats = computeStats(live_projects.length + projects.length);
   const projectsPageCount = Math.ceil(projects.length / PROJECTS_PER_PAGE);
   const pagedProjects = projects.slice(
     (projectsPage - 1) * PROJECTS_PER_PAGE,
@@ -214,10 +234,10 @@ export default function Home() {
                 mt: 5,
               }}
             >
-              <Button component="a" href="#live-projects" variant="contained" color="primary" size="large" sx={heroButtonSx}>
+              <Button component="a" href="#live-projects" variant="contained" color="primary" sx={heroButtonSx}>
                 See what we built
               </Button>
-              <Button component="a" href="#story" variant="outlined" color="primary" size="large" sx={heroButtonSx}>
+              <Button component="a" href="#story" variant="outlined" color="primary" sx={heroButtonSx}>
                 Read our story
               </Button>
             </Box>
@@ -239,8 +259,8 @@ export default function Home() {
                 <ContentCard
                   title={project.title}
                   body={project.body}
-                  cta={project.cta}
                   href={project.href}
+                  icon={pickIcon(project.icon, i)}
                   sx={{ height: "100%" }}
                 />
               </FadeIn>
@@ -344,8 +364,8 @@ export default function Home() {
                   <ContentCard
                     title={project.title}
                     body={project.body}
-                    cta={project.cta}
-                    href={project.href}
+                      href={project.href}
+                    icon={pickIcon(project.icon, 3 + (projectsPage - 1) * PROJECTS_PER_PAGE + i)}
                     sx={{ height: "100%" }}
                   />
                 </FadeIn>

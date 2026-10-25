@@ -13,21 +13,15 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Divider,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DownloadIcon from "@mui/icons-material/Download";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { CoffeeIcon, COFFEE_ICON_TYPES } from "@components";
 import defaultData from "@/constants/website-details.json";
 
 // ── Types ────────────────────────────────────────────────────────────────────
-
-interface Stat {
-  label: string;
-  value: number;
-  suffix?: string;
-}
 
 interface TeamMember {
   name: string;
@@ -41,14 +35,14 @@ interface TeamMember {
 interface Project {
   title: string;
   body: string;
-  cta: string;
   href?: string;
+  /** CoffeeIcon name; blank = automatic */
+  icon?: string;
 }
 
 interface SiteData {
   socials: { github: string; email: string };
   about: string;
-  stats: Stat[];
   team: TeamMember[];
   live_projects: Project[];
   projects: Project[];
@@ -91,6 +85,13 @@ function Field({
 
 // ── Main component ───────────────────────────────────────────────────────────
 
+/** Stats are calculated on the site now; drop any old `stats` still stored in the document. */
+function withoutLegacyStats(data: SiteData) {
+  const doc: Record<string, unknown> = { ...data };
+  delete doc.stats;
+  return doc;
+}
+
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -131,7 +132,7 @@ export default function AdminDashboard() {
       const res = await fetch("/api/details", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pjson: data }),
+        body: JSON.stringify({ pjson: withoutLegacyStats(data) }),
       });
       setSaveStatus(res.ok ? "saved" : "error");
     } catch {
@@ -148,29 +149,6 @@ export default function AdminDashboard() {
 
   function setAbout(value: string) {
     setData((d) => d && { ...d, about: value });
-    setSaveStatus("idle");
-  }
-
-  function setStat(index: number, field: keyof Stat, value: string) {
-    setData((d) => {
-      if (!d) return d;
-      const stats = d.stats.map((s, i) =>
-        i !== index
-          ? s
-          : { ...s, [field]: field === "value" ? Number(value) : value || undefined }
-      );
-      return { ...d, stats };
-    });
-    setSaveStatus("idle");
-  }
-
-  function addStat() {
-    setData((d) => d && { ...d, stats: [...d.stats, { label: "", value: 0 }] });
-    setSaveStatus("idle");
-  }
-
-  function removeStat(index: number) {
-    setData((d) => d && { ...d, stats: d.stats.filter((_, i) => i !== index) });
     setSaveStatus("idle");
   }
 
@@ -211,7 +189,7 @@ export default function AdminDashboard() {
   function addProject(section: "live_projects" | "projects") {
     setData(
       (d) =>
-        d && { ...d, [section]: [...d[section], { title: "", body: "", cta: "", href: "" }] }
+        d && { ...d, [section]: [...d[section], { title: "", body: "", href: "", icon: "" }] }
     );
     setSaveStatus("idle");
   }
@@ -249,7 +227,7 @@ export default function AdminDashboard() {
           Admin Dashboard
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Edit site content, then save.
+          Edit site content, then save. The home page stats (projects, years, lines of code) are calculated for you.
         </Typography>
       </Box>
 
@@ -296,42 +274,6 @@ export default function AdminDashboard() {
             onRemove={(i) => removeProject("projects", i)}
             onChange={(i, field, v) => setProject("projects", i, field, v)}
           />
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Stats */}
-      <Accordion disableGutters elevation={2} sx={{ mb: 1.5, borderRadius: "8px !important", "&:before": { display: "none" } }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography fontWeight={600}>Stats</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ ml: 1, alignSelf: "center" }}>
-            ({data.stats.length})
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Box display="flex" flexDirection="column" gap={2}>
-            {data.stats.map((stat, i) => (
-              <Box key={i}>
-                {i > 0 && <Divider sx={{ mb: 2 }} />}
-                <Box display="flex" alignItems="center" gap={1}>
-                  <Box flex={1} display="flex" gap={2}>
-                    <Field label="Label" value={stat.label} onChange={(v) => setStat(i, "label", v)} />
-                    <Field label="Value" value={stat.value} onChange={(v) => setStat(i, "value", v)} type="number" width={120} />
-                    <Field label="Suffix" value={stat.suffix ?? ""} onChange={(v) => setStat(i, "suffix", v)} width={120} />
-                  </Box>
-                  <Tooltip title="Remove">
-                    <IconButton size="small" onClick={() => removeStat(i)}>
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </Box>
-            ))}
-            <Box>
-              <Button size="small" startIcon={<AddIcon />} onClick={addStat}>
-                Add stat
-              </Button>
-            </Box>
-          </Box>
         </AccordionDetails>
       </Accordion>
 
@@ -432,6 +374,79 @@ export default function AdminDashboard() {
   );
 }
 
+// ── IconPicker ───────────────────────────────────────────────────────────────
+
+const ICON_LABELS: Record<(typeof COFFEE_ICON_TYPES)[number], string> = {
+  mug: "Mug",
+  takeaway: "Takeaway cup",
+  espresso: "Espresso",
+  frenchPress: "French press",
+  flask: "Flask",
+  moka: "Moka pot",
+  pourOver: "Pour-over",
+  latte: "Latte glass",
+};
+
+/** Pick which coffee vessel a project card shows. "Auto" leaves it to the site to cycle. */
+function IconPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const options: { id: string; label: string }[] = [
+    { id: "", label: "Auto" },
+    ...COFFEE_ICON_TYPES.map((t) => ({ id: t, label: ICON_LABELS[t] })),
+  ];
+  return (
+    <Box role="group" aria-label="Card icon">
+      <Typography variant="body2" color="text.secondary" mb={1}>
+        Card icon
+      </Typography>
+      <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(92px, 1fr))" gap={1}>
+        {options.map((o) => {
+          const selected = value === o.id;
+          return (
+            <Box
+              key={o.id || "auto"}
+              component="button"
+              type="button"
+              onClick={() => onChange(o.id)}
+              aria-pressed={selected}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 0.5,
+                minHeight: 92,
+                p: 1,
+                font: "inherit",
+                cursor: "pointer",
+                borderRadius: 2,
+                border: "1px solid",
+                borderColor: selected ? "primary.main" : "divider",
+                bgcolor: selected ? "rgba(196,155,99,0.12)" : "transparent",
+                color: selected ? "primary.main" : "text.secondary",
+                transition: "border-color 0.2s, background-color 0.2s, color 0.2s",
+                "&:hover": { borderColor: "secondary.light", color: "primary.light" },
+              }}
+            >
+              {o.id ? (
+                <Box sx={{ lineHeight: 0 }}>
+                  <CoffeeIcon type={o.id as (typeof COFFEE_ICON_TYPES)[number]} size={40} />
+                </Box>
+              ) : (
+                <Typography sx={{ fontSize: "1.4rem", lineHeight: "40px" }} aria-hidden="true">
+                  ✦
+                </Typography>
+              )}
+              <Typography variant="caption" sx={{ lineHeight: 1.2, textAlign: "center" }}>
+                {o.label}
+              </Typography>
+            </Box>
+          );
+        })}
+      </Box>
+    </Box>
+  );
+}
+
 // ── ProjectsList ─────────────────────────────────────────────────────────────
 
 function ProjectsList({
@@ -480,13 +495,7 @@ function ProjectsList({
                 fullWidth
                 size="small"
               />
-              <TextField
-                label="CTA label"
-                value={project.cta}
-                onChange={(e) => onChange(i, "cta", e.target.value)}
-                fullWidth
-                size="small"
-              />
+              <IconPicker value={project.icon ?? ""} onChange={(v) => onChange(i, "icon", v)} />
             </Box>
           </AccordionDetails>
         </Accordion>

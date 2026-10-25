@@ -109,7 +109,6 @@ export default function DemoSections() {
             <ContentCard
               title="Content Card"
               body="A text-first card with an accent border, tag chip, and a CTA."
-              cta="Learn more"
               onCtaClick={() => {}}
             />
           </FadeIn>
