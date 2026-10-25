@@ -94,10 +94,7 @@ export default function AdminPage() {
       <Box sx={{ bgcolor: "background.default" }}>
         <Navbar />
         <Box sx={{ mt: 15 }}>
-          <Box sx={{ display: "flex", justifyContent: "flex-end", px: 3 }}>
-            <Button onClick={handleLogout}>Log out</Button>
-          </Box>
-          <AdminDashboard />
+          <AdminDashboard onLogout={handleLogout} />
         </Box>
         
         <Footer github={socials.github} email={socials.email} />
