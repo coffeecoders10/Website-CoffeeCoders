@@ -1,30 +1,21 @@
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 html {
   height: 100%;
+  color-scheme: dark;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 html,
 body {
   max-width: 100vw;
+  overflow-x: clip;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #0d0d0d;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 * {
@@ -38,9 +29,34 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
+::selection {
+  background: rgba(196, 155, 99, 0.35);
+  color: #f5ede6;
+}
+
+/* Keyboard focus: one consistent gold ring across links, buttons and cards */
+:focus-visible {
+  outline: 2px solid #c49b63;
+  outline-offset: 3px;
+}
+
+/* Section anchors sit below the fixed navbar */
+section[id] {
+  scroll-margin-top: 80px;
+}
+
+@media (prefers-reduced-motion: reduce) {
   html {
-    color-scheme: dark;
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
   }
 }
 
@@ -51,13 +67,13 @@ a {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0D0D0D;
+  background: #0d0d0d;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #492A17;
+  background: #492a17;
   border-radius: 4px;
-  border: 2px solid #0D0D0D;
+  border: 2px solid #0d0d0d;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -66,5 +82,5 @@ a {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #492A17 #0D0D0D;
+  scrollbar-color: #492a17 #0d0d0d;
 }

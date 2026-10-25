@@ -10,7 +10,7 @@ interface FadeInProps {
   delay?: number;
   /** Duration of animation in ms */
   duration?: number;
-  /** Y offset to animate from (px). Defaults to 24 */
+  /** Y offset to animate from (px). Defaults to 20 */
   offsetY?: number;
   /** Trigger on mount only (ignores scroll). Defaults to false */
   onLoadOnly?: boolean;
@@ -20,8 +20,8 @@ interface FadeInProps {
 export default function FadeIn({
   children,
   delay = 0,
-  duration = 1000,
-  offsetY = 24,
+  duration = 700,
+  offsetY = 20,
   onLoadOnly = false,
   sx,
 }: FadeInProps) {
@@ -45,7 +45,8 @@ export default function FadeIn({
           observer.disconnect();
         }
       },
-      { threshold: 0.15 }
+      // Fire as soon as a sliver enters so tall mobile sections never wait on a 15% threshold
+      { threshold: 0.05, rootMargin: '0px 0px -8% 0px' }
     );
 
     observer.observe(el);
@@ -58,8 +59,13 @@ export default function FadeIn({
       sx={{
         opacity: visible ? 1 : 0,
         transform: visible ? 'translateY(0)' : `translateY(${offsetY}px)`,
-        transition: `opacity ${duration}ms ease ${delay}ms, transform ${duration}ms ease ${delay}ms`,
-        willChange: 'opacity, transform',
+        transition: `opacity ${duration}ms cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms, transform ${duration}ms cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`,
+        willChange: visible ? 'auto' : 'opacity, transform',
+        '@media (prefers-reduced-motion: reduce)': {
+          opacity: 1,
+          transform: 'none',
+          transition: 'none',
+        },
         ...sx,
       }}
     >

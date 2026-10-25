@@ -65,6 +65,8 @@ Every section starts with a script eyebrow over an uppercase `h2`, centered:
 
 Eyebrow wording is an invitation: "Discover our", "Explore", "Find out more", "Meet the". Script font is for these eyebrows and the hero "Welcome to" only. Never for body text or buttons.
 
+Easing for new motion: `cubic-bezier(0.22, 1, 0.36, 1)`, 0.25–0.7s.
+
 Sizes in use:
 - Hero title: `3rem` / `5rem` (xs / md). Hero script: `2rem` / `2.75rem`.
 - Section `h2`: `2rem` / `3rem` for primary sections. The existing "Live Projects" and "Meet the Coffee Coders" use a smaller `1rem` / `2rem`, so pick one scale per page and keep it.
@@ -94,11 +96,12 @@ All live in `components/<Name>/` with an `index.ts`, and are re-exported from [c
 
 | Component | Use | Notes |
 |---|---|---|
-| `Navbar` | Fixed top bar with logo + "COFFEE / CODERS" wordmark | Transparent at top; glass blur after 10px scroll. Include on every page |
+| `Navbar` | Fixed top bar with logo + wordmark | Transparent at top; glass blur after 10px scroll, reading-progress line. Optional `links` prop adds in-page anchors (desktop underline, mobile hamburger menu, active-section highlight). Include on every page |
 | `Footer` | Logo, GitHub and email icons, © year | Takes `github` and `email` props from site data |
-| `FadeIn` | Scroll-triggered fade and 24px rise | Props: `delay`, `duration` (1000ms), `offsetY`, `onLoadOnly` (use for above-the-fold). Wrap every section |
-| `ContentCard` | Title, body, CTA text button | Coffee-cup watermark icon slides and enlarges on hover. Whole card is clickable when `onCtaClick` is set |
-| `ProfileCard` | 3:4 portrait with gradient overlay, name/role, bio revealed on hover, GitHub/website icon buttons | Falls back to `secondary.dark` when no `avatarSrc` |
+| `FadeIn` | Scroll-triggered fade and 20px rise | Props: `delay`, `duration` (700ms), `offsetY`, `onLoadOnly` (use for above-the-fold). Respects reduced motion. Wrap section headers and cards, not both a section and its cards |
+| `SectionHeader` | Script eyebrow over uppercase `h2` | Props: `eyebrow`, `title`, `align`. Use instead of hand-writing the header pattern |
+| `ContentCard` | Title, body, CTA text | Pass `href` to make the whole card a real link (new tab). `onCtaClick` still works and adds keyboard support. Lifts on hover (hover-capable devices only) |
+| `ProfileCard` | 3:4 portrait with gradient overlay, name/role, bio revealed on hover/focus (always visible on touch), GitHub/website icon links | Falls back to `secondary.dark` when no `avatarSrc` |
 | `GalleryGrid` | Responsive grid with optional paging (numbers or dots) | Passing `columns` as an object, paging uses the `md` count |
 | `Carousel` | `interaction` (arrows/dots) or `continuous` (marquee, pauses on hover) | |
 | `AnimatedStat` | Count-up number when scrolled into view | Gold number over secondary label |
@@ -130,16 +133,15 @@ Before adding a component, check whether one of these (or a prop on one) covers 
 
 - Give every `IconButton` an `aria-label` and every image meaningful `alt`.
 - Text contrast: `text.primary` on `#0D0D0D` is fine; `text.secondary` (`#C4896A`) is fine for body but avoid it below 14px. `text.dark` is decorative script only.
-- Respect reduced motion in any new animation (`@media (prefers-reduced-motion: reduce)`). Existing `FadeIn`, `Carousel` and `AnimatedStat` do not, so adding it there is a welcome fix.
-- Make clickable non-link elements keyboard reachable (the clickable `ContentCard` and Carousel dots currently are not).
+- Respect reduced motion in any new animation. `globals.css` has a global reduce rule and `FadeIn`/`AnimatedStat` handle it themselves.
+- Make clickable non-link elements real `<a>`/`<button>` elements. Focus ring is global (`:focus-visible`, gold).
+- Gate hover-only effects behind `@media (hover: hover)` and never hide essential content behind hover.
+- Touch targets are at least 44px.
 
 ## Known inconsistencies (don't copy these)
 
-- [globals.css](src/app/globals.css) still has the create-next-app light/dark variables and `font-family: Arial`. MUI's `CssBaseline` and the theme override it; don't build on `--background` / `--foreground`.
 - [page.module.css](src/app/page.module.css) is unused template CSS. Don't add CSS modules; use `sx`.
 - [DemoSections.tsx](src/app/DemoSections.tsx) is an unused component showcase; useful as a usage reference only.
-- `metadata.description` in layout is still "CoffeeCoders Template".
-- Section header sizes differ between sections (see Typography). Prefer the larger scale for new sections.
 - Raw hex/rgba values appear in `Navbar`, `ContentCard` and `ProfileCard`. New code should use theme tokens.
 
 ## Checklist for a new feature

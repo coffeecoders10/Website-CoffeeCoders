@@ -17,5 +17,8 @@ export type {
   ProfileCardProps,
 } from './Cards';
 
+export { default as SectionHeader } from './SectionHeader';
+export type { SectionHeaderProps } from './SectionHeader';
+
 export { AnimatedStat } from './AnimatedStat';
 export type { AnimatedStatProps } from './AnimatedStat';

@@ -160,14 +160,20 @@ function InteractionCarousel({
           {slides.map((_, i) => (
             <Box
               key={i}
+              component="button"
+              type="button"
               onClick={() => setCurrent(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              aria-current={i === current}
               sx={{
                 width: i === current ? 20 : 8,
                 height: 8,
+                p: 0,
+                border: 0,
                 borderRadius: 4,
                 bgcolor: i === current ? 'primary.main' : 'action.disabled',
                 cursor: 'pointer',
-                transition: 'all 0.3s',
+                transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
               }}
             />
           ))}
