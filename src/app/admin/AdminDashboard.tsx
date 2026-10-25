@@ -76,6 +76,19 @@ function withoutLegacyStats(data: SiteData) {
   return doc;
 }
 
+/** The site cycles "Auto" icons by position; "projects" start after the three live cards. */
+function autoIconIndex(key: ListKey, i: number) {
+  return key === "projects" ? 3 + i : i;
+}
+
+/** Pin each "Auto" icon to the vessel its current position gives it, so it stays put when the list changes. */
+function pinAutoIcons(key: ListKey, list: object[]): object[] {
+  if (key === "team") return list;
+  return (list as Project[]).map((p, i) =>
+    p.icon ? p : { ...p, icon: COFFEE_ICON_TYPES[autoIconIndex(key, i) % COFFEE_ICON_TYPES.length] }
+  );
+}
+
 function sectionCount(data: SiteData, key: SectionKey): number | null {
   if (key === "live_projects" || key === "projects" || key === "team") return data[key].length;
   return null;
@@ -127,6 +140,12 @@ const ICON_LABELS: Record<IconName, string> = {
   moka: "Moka pot",
   pourOver: "Pour-over",
   latte: "Latte glass",
+  cappuccino: "Cappuccino",
+  travelMug: "Travel mug",
+  glassMug: "Glass mug",
+  aeropress: "AeroPress",
+  chemex: "Chemex",
+  cezve: "Cezve",
 };
 
 /** Pick which coffee vessel a project card shows. "Auto" leaves it to the site to cycle. */
@@ -479,12 +498,15 @@ export default function AdminDashboard({ onLogout }: { onLogout?: () => void }) 
   function removeItem(key: ListKey, index: number, label: string) {
     if (!data) return;
     setUndo({ label, snapshot: data });
-    update((d) => ({ ...d, [key]: (d[key] as object[]).filter((_, i) => i !== index) }));
+    update((d) => ({
+      ...d,
+      [key]: pinAutoIcons(key, d[key] as object[]).filter((_, i) => i !== index),
+    }));
   }
 
   function moveItem(key: ListKey, index: number, dir: -1 | 1) {
     update((d) => {
-      const list = [...(d[key] as object[])];
+      const list = [...pinAutoIcons(key, d[key] as object[])];
       const to = index + dir;
       if (to < 0 || to >= list.length) return d;
       [list[index], list[to]] = [list[to], list[index]];
@@ -501,7 +523,7 @@ export default function AdminDashboard({ onLogout }: { onLogout?: () => void }) 
         noun="project"
         items={data[key]}
         getTitle={(p) => p.title}
-        getThumb={(p, i) => <CoffeeIcon type={(p.icon || i) as IconName | number} size={28} />}
+        getThumb={(p, i) => <CoffeeIcon type={(p.icon || autoIconIndex(key, i)) as IconName | number} size={28} />}
         onAdd={() => addItem(key)}
         onRemove={(i) => removeItem(key, i, "Project removed")}
         onMove={(i, dir) => moveItem(key, i, dir)}
@@ -524,7 +546,7 @@ export default function AdminDashboard({ onLogout }: { onLogout?: () => void }) 
             title={p.title || "Untitled project"}
             body={p.body}
             href={p.href || undefined}
-            icon={(p.icon || i) as IconName | number}
+            icon={(p.icon || autoIconIndex(key, i)) as IconName | number}
           />
         )}
       />

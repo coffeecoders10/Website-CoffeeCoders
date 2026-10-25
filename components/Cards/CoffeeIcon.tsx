@@ -13,6 +13,12 @@ export const COFFEE_ICON_TYPES = [
   'moka',
   'pourOver',
   'latte',
+  'cappuccino',
+  'travelMug',
+  'glassMug',
+  'aeropress',
+  'chemex',
+  'cezve',
 ] as const;
 
 export type CoffeeIconType = (typeof COFFEE_ICON_TYPES)[number];
@@ -122,6 +128,74 @@ const ICONS: Record<CoffeeIconType, ReactNode> = {
       <Steam base={13} scale={0.7} />
       <path d="M12.5 16.5h19l-2 22a3 3 0 0 1-3 3h-9a3 3 0 0 1-3-3l-2-22Z" />
       <path d="M13.6 26.5h16.8M14.4 33.5h15.2" />
+    </>
+  ),
+
+  // Wide cappuccino cup with a foam dome, on a saucer line
+  cappuccino: (
+    <>
+      <Steam base={19} scale={0.8} />
+      <path d="M12 24c1-3.5 4-4.5 7-4 1.5-1.5 5-1.5 6.5 0 3-.5 5.5.5 6.5 4" />
+      <path d="M9 24h26" />
+      <path d="M10 24v2a10 10 0 0 0 10 10h4a10 10 0 0 0 10-10v-2" />
+      <path d="M34 27h2a2.5 2.5 0 0 1 0 5h-3.5" />
+      <path d="M18.5 36.5l.5 5h6l.5-5" />
+      <path d="M8 41.5h28" />
+    </>
+  ),
+
+  // Insulated travel mug: domed lid, grip band and a side handle
+  travelMug: (
+    <>
+      <Steam base={10} scale={0.55} />
+      <path d="M15 15v-2a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2" />
+      <path d="M14 15h16v24a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 14 39V15Z" />
+      <path d="M14 28h16" />
+      <path d="M30 19h2.5a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H30" />
+    </>
+  ),
+
+  // Double-wall glass mug: outer glass, inner wall and a drink line
+  glassMug: (
+    <>
+      <Steam base={18} />
+      <path d="M10 20h22v16.5a5 5 0 0 1-5 5H15a5 5 0 0 1-5-5V20Z" />
+      <path d="M13 22.5v14a2.5 2.5 0 0 0 2.5 2.5h11a2.5 2.5 0 0 0 2.5-2.5v-14" strokeWidth={1.2} opacity={0.6} />
+      <path d="M13 28h16" />
+      <path d="M32 24h2.5a2.5 2.5 0 0 1 2.5 2.5v4a2.5 2.5 0 0 1-2.5 2.5H31" />
+    </>
+  ),
+
+  // AeroPress: plunger and chamber pressed onto a small cup
+  aeropress: (
+    <>
+      <path d="M21 15V9.5M17 9.5h8" />
+      <path d="M17 31V15h8v16" />
+      <path d="M14 31h14" />
+      <path d="M13 33h16v5.5a3 3 0 0 1-3 3H16a3 3 0 0 1-3-3V33Z" />
+      <path d="M29 35h1.5a2.5 2.5 0 0 1 0 5H28.5" />
+    </>
+  ),
+
+  // Chemex: hourglass glass carafe with a collar at the waist
+  chemex: (
+    <>
+      <Steam base={9} scale={0.5} />
+      <path d="M12 10l9 13.5-9.5 15a2.5 2.5 0 0 0 2.2 3h16.6a2.5 2.5 0 0 0 2.2-3L23 23.5 32 10" />
+      <path d="M12 10h20" />
+      <path d="M19.5 20.5h5v5h-5Z" />
+      <path d="M14.5 36h15" />
+    </>
+  ),
+
+  // Cezve (ibrik): narrow-necked pot with a long handle
+  cezve: (
+    <>
+      <Steam base={22} scale={0.75} />
+      <path d="M16 22c0 4-4 8-4 13 0 2 .5 4 1.5 6.5h17c1-2.5 1.5-4.5 1.5-6.5 0-5-4-9-4-13" />
+      <path d="M15 22h14" />
+      <path d="M12.3 33h19.4" />
+      <path d="M32 30.5l9-3" />
     </>
   ),
 };

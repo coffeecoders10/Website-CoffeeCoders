@@ -104,7 +104,7 @@ All live in `components/<Name>/` with an `index.ts`, and are re-exported from [c
 | `ProfileCard` | 3:4 portrait with gradient overlay, name/role, bio revealed on hover/focus (always visible on touch), GitHub/website icon links | Falls back to `secondary.dark` when no `avatarSrc` |
 | `GalleryGrid` | Responsive grid with optional paging (numbers or dots) | Passing `columns` as an object, paging uses the `md` count |
 | `Carousel` | `interaction` (arrows/dots) or `continuous` (marquee, pauses on hover) | |
-| `CoffeeIcon` | Line-drawn coffee vessels: mug, takeaway, espresso, frenchPress, flask, moka, pourOver, latte | `type` (name or cycling number), `size`. Steam wisps have class `steam-wisp` and start hidden; a parent reveals them on hover |
+| `CoffeeIcon` | Line-drawn coffee vessels: mug, takeaway, espresso, frenchPress, flask, moka, pourOver, latte, cappuccino, travelMug, glassMug, aeropress, chemex, cezve | `type` (name or cycling number), `size`. Steam wisps have class `steam-wisp` and start hidden; a parent reveals them on hover |
 | `AnimatedStat` | Count-up number when scrolled into view | Gold number over secondary label |
 
 Before adding a component, check whether one of these (or a prop on one) covers it.
