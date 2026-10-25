@@ -24,16 +24,19 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 The admin dashboard lets you edit site content — team members, projects, statistics, social links, and the "About Us" section.
 
-To access it, navigate to `/admin` and enter the admin password.
+To access it, navigate to `/admin` and sign in with a Backbone user account. Only usernames listed in `ADMIN_USERNAMES` are allowed in; the server enforces this on every write.
 
 ## Environment Variables
 
-Create a `.env.local` file in the project root with:
+Copy `.env.example` to `.env.local` and fill it in (all variables are server-side only):
 
 ```
-NEXT_PUBLIC_ADMIN_PWD=your_admin_password
-NEXT_PUBLIC_API_URL=https://your-backend-url
-NEXT_PUBLIC_API_TOKEN=your_api_token
+BACKBONE_URL=
+BACKBONE_DB_QUERY_API_KEY=
+BACKBONE_SITE_TABLE=coffeecoders_website
+BACKBONE_SITE_DETAILS_ID=1
+ADMIN_USERNAMES=wsarvesh,swatkat
+ADMIN_SESSION_SECRET=   # 32+ random chars
 ```
 
 ## Other Scripts

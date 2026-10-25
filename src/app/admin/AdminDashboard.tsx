@@ -100,16 +100,13 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/details?id=1");
+        const res = await fetch("/api/details");
         if (res.ok) {
           const json = await res.json();
           setData(json.pjson ?? json);
         } else if (res.status === 404) {
-          const createRes = await fetch("/api/details?id=1", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(defaultData),
-          });
+          // The server seeds the row from the bundled JSON.
+          const createRes = await fetch("/api/details", { method: "POST" });
           if (createRes.ok) {
             setData(defaultData as SiteData);
           } else {
@@ -131,7 +128,7 @@ export default function AdminDashboard() {
     if (!data) return;
     setSaveStatus("saving");
     try {
-      const res = await fetch("/api/details?id=1", {
+      const res = await fetch("/api/details", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pjson: data }),

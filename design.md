@@ -116,7 +116,7 @@ Before adding a component, check whether one of these (or a prop on one) covers 
 ## Content and data
 
 - All site copy lives in one JSON document: shape in [src/constants/website-details.json](src/constants/website-details.json), type `SiteData` (`socials`, `about`, `stats`, `team`, `live_projects`, `projects`).
-- Pages load it from `GET /api/details?id=1` and fall back to the bundled JSON on failure or 404. The admin dashboard (`/admin`, password gate via `NEXT_PUBLIC_ADMIN_PWD`) edits and saves it.
+- The document lives in Backbone (table `BACKBONE_SITE_TABLE`, row `BACKBONE_SITE_DETAILS_ID`), accessed only server-side via [src/lib/backbone.ts](src/lib/backbone.ts). Pages load it from `GET /api/details` and fall back to the bundled JSON on failure or 404. The admin dashboard (`/admin`, Backbone user login, restricted to `ADMIN_USERNAMES`, with a signed session cookie from [src/lib/session.ts](src/lib/session.ts)) edits and saves it.
 - A new content section should add a field to `SiteData`, to the JSON default, and to the admin editor, so it stays editable. Do not hard-code copy in JSX.
 - Voice: friendly, short, coffee-flavored ("The place where Caffine creates Code").
 - Static assets are in `public/`. Logo is `/coffeecoders_logo.png`; team photos are `/<name>-profile.jpg`.

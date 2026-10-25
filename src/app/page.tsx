@@ -37,7 +37,7 @@ export default function Home() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/details?id=1");
+        const res = await fetch("/api/details");
         if (res.ok) {
           const json = await res.json();
           setData(json.pjson ?? json);
