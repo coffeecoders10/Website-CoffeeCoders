@@ -27,7 +27,8 @@ const greatVibes = Great_Vibes({
 
 export const metadata: Metadata = {
   title: "CoffeeCoders",
-  description: "CoffeeCoders Template",
+  description:
+    "CoffeeCoders is a small team that turns caffeine into code. Explore our live projects, open-source work and the people behind them.",
   icons: {
     icon: "/icon.png",
   },

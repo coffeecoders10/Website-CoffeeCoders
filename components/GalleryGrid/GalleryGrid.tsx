@@ -85,10 +85,16 @@ export default function GalleryGrid({
             ? Array.from({ length: totalPages }).map((_, i) => (
                 <Box
                   key={i}
+                  component="button"
+                  type="button"
                   onClick={() => setPage(i)}
+                  aria-label={`Go to page ${i + 1}`}
+                  aria-current={i === page}
                   sx={{
                     width: 8,
                     height: 8,
+                    p: 0,
+                    border: 0,
                     borderRadius: '50%',
                     bgcolor: i === page ? 'primary.main' : 'action.disabled',
                     cursor: 'pointer',
@@ -99,9 +105,15 @@ export default function GalleryGrid({
             : Array.from({ length: totalPages }).map((_, i) => (
                 <Typography
                   key={i}
+                  component="button"
+                  type="button"
                   onClick={() => setPage(i)}
+                  aria-label={`Go to page ${i + 1}`}
+                  aria-current={i === page}
                   variant="body2"
                   sx={{
+                    border: 0,
+                    font: 'inherit',
                     px: 1,
                     py: 0.25,
                     borderRadius: 1,

@@ -7,21 +7,39 @@ import {
   TextField,
   Typography,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import AdminDashboard from "./AdminDashboard";
 import { Navbar, Footer } from "@components";
 import defaultData from "@/constants/website-details.json";
 
 export default function AdminPage() {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
-  const [error, setError] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [socials, setSocials] = useState(defaultData.socials);
+
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const res = await fetch("/api/admin/session");
+        setAuthenticated(res.ok);
+      } catch {
+        // stay signed out
+      } finally {
+        setChecking(false);
+      }
+    }
+    checkSession();
+  }, []);
 
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/details?id=1");
+        const res = await fetch("/api/details");
         if (res.ok) {
           const json = await res.json();
           const pjson = json.pjson ?? json;
@@ -34,22 +52,49 @@ export default function AdminPage() {
     load();
   }, []);
 
-  function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (password === process.env.NEXT_PUBLIC_ADMIN_PWD) {
-      setAuthenticated(true);
-      setError(false);
-    } else {
-      setError(true);
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      if (res.ok) {
+        setAuthenticated(true);
+        setPassword("");
+      } else {
+        const json = await res.json().catch(() => ({}));
+        setError(json.error ?? "Login failed.");
+      }
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
+  }
+
+  async function handleLogout() {
+    await fetch("/api/admin/logout", { method: "POST" }).catch(() => {});
+    setAuthenticated(false);
+  }
+
+  if (checking) {
+    return (
+      <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center">
+        <CircularProgress />
+      </Box>
+    );
   }
 
   if (authenticated) {
     return (
       <Box sx={{ bgcolor: "background.default" }}>
         <Navbar />
-        <Box sx={{mt: 15 }}>
-          <AdminDashboard />
+        <Box sx={{ mt: 15 }}>
+          <AdminDashboard onLogout={handleLogout} />
         </Box>
         
         <Footer github={socials.github} email={socials.email} />
@@ -82,15 +127,23 @@ export default function AdminPage() {
           </Typography>
           <Box component="form" onSubmit={handleLogin} display="flex" flexDirection="column" gap={2}>
             <TextField
+              label="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              fullWidth
+              autoFocus
+              autoComplete="username"
+            />
+            <TextField
               label="Password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               fullWidth
-              autoFocus
+              autoComplete="current-password"
             />
-            {error && <Alert severity="error">Incorrect password.</Alert>}
-            <Button type="submit" variant="contained" color="primary" fullWidth>
+            {error && <Alert severity="error">{error}</Alert>}
+            <Button type="submit" variant="contained" color="primary" fullWidth disabled={submitting}>
               Login
             </Button>
           </Box>

@@ -1,33 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   Box,
   Typography,
   Button,
   CircularProgress,
   Alert,
+  Snackbar,
   TextField,
   IconButton,
   Tooltip,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Divider,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DownloadIcon from "@mui/icons-material/Download";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import LogoutIcon from "@mui/icons-material/Logout";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import RocketLaunchOutlinedIcon from "@mui/icons-material/RocketLaunchOutlined";
+import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
+import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
+import AlternateEmailIcon from "@mui/icons-material/AlternateEmail";
+import { CoffeeIcon, COFFEE_ICON_TYPES, ContentCard, ProfileCard } from "@components";
 import defaultData from "@/constants/website-details.json";
 
 // ── Types ────────────────────────────────────────────────────────────────────
-
-interface Stat {
-  label: string;
-  value: number;
-  suffix?: string;
-}
 
 interface TeamMember {
   name: string;
@@ -41,20 +41,58 @@ interface TeamMember {
 interface Project {
   title: string;
   body: string;
-  cta: string;
   href?: string;
+  /** CoffeeIcon name; blank = automatic */
+  icon?: string;
 }
 
 interface SiteData {
   socials: { github: string; email: string };
   about: string;
-  stats: Stat[];
   team: TeamMember[];
   live_projects: Project[];
   projects: Project[];
 }
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
+type SectionKey = "about" | "live_projects" | "projects" | "team" | "socials";
+type ListKey = "live_projects" | "projects" | "team";
+type IconName = (typeof COFFEE_ICON_TYPES)[number];
+
+const SECTIONS: { key: SectionKey; label: string; hint: string; icon: ReactNode }[] = [
+  { key: "about", label: "About", hint: "The story on the home page", icon: <InfoOutlinedIcon fontSize="small" /> },
+  { key: "live_projects", label: "Live projects", hint: "Running and open to visit", icon: <RocketLaunchOutlinedIcon fontSize="small" /> },
+  { key: "projects", label: "Projects", hint: "Everything else we have built", icon: <FolderOutlinedIcon fontSize="small" /> },
+  { key: "team", label: "Team", hint: "The people behind the code", icon: <GroupsOutlinedIcon fontSize="small" /> },
+  { key: "socials", label: "Socials", hint: "Footer links", icon: <AlternateEmailIcon fontSize="small" /> },
+];
+
+const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+
+/** Stats are calculated on the site now; drop any old `stats` still stored in the document. */
+function withoutLegacyStats(data: SiteData) {
+  const doc: Record<string, unknown> = { ...data };
+  delete doc.stats;
+  return doc;
+}
+
+/** The site cycles "Auto" icons by position; "projects" start after the three live cards. */
+function autoIconIndex(key: ListKey, i: number) {
+  return key === "projects" ? 3 + i : i;
+}
+
+/** Pin each "Auto" icon to the vessel its current position gives it, so it stays put when the list changes. */
+function pinAutoIcons(key: ListKey, list: object[]): object[] {
+  if (key === "team") return list;
+  return (list as Project[]).map((p, i) =>
+    p.icon ? p : { ...p, icon: COFFEE_ICON_TYPES[autoIconIndex(key, i) % COFFEE_ICON_TYPES.length] }
+  );
+}
+
+function sectionCount(data: SiteData, key: SectionKey): number | null {
+  if (key === "live_projects" || key === "projects" || key === "team") return data[key].length;
+  return null;
+}
 
 // ── Field helper ─────────────────────────────────────────────────────────────
 
@@ -63,55 +101,303 @@ function Field({
   value,
   onChange,
   multiline,
-  type,
-  width,
+  minRows,
+  helper,
+  placeholder,
 }: {
   label: string;
-  value: string | number;
+  value: string;
   onChange: (v: string) => void;
   multiline?: boolean;
-  type?: string;
-  width?: number | string;
+  minRows?: number;
+  helper?: string;
+  placeholder?: string;
 }) {
   return (
     <TextField
       label={label}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      fullWidth={!width}
-      sx={width ? { width } : undefined}
+      fullWidth
       size="small"
       multiline={multiline}
-      minRows={multiline ? 3 : undefined}
-      type={type}
+      minRows={multiline ? (minRows ?? 3) : undefined}
+      helperText={helper}
+      placeholder={placeholder}
       variant="outlined"
     />
   );
 }
 
+// ── IconPicker ───────────────────────────────────────────────────────────────
+
+const ICON_LABELS: Record<IconName, string> = {
+  mug: "Mug",
+  takeaway: "Takeaway cup",
+  espresso: "Espresso",
+  frenchPress: "French press",
+  flask: "Flask",
+  moka: "Moka pot",
+  pourOver: "Pour-over",
+  latte: "Latte glass",
+  cappuccino: "Cappuccino",
+  travelMug: "Travel mug",
+  glassMug: "Glass mug",
+  aeropress: "AeroPress",
+  chemex: "Chemex",
+  cezve: "Cezve",
+};
+
+/** Pick which coffee vessel a project card shows. "Auto" leaves it to the site to cycle. */
+function IconPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const options: { id: string; label: string }[] = [
+    { id: "", label: "Auto" },
+    ...COFFEE_ICON_TYPES.map((t) => ({ id: t, label: ICON_LABELS[t] })),
+  ];
+  return (
+    <Box role="group" aria-label="Card icon">
+      <Typography variant="body2" color="text.secondary" mb={1}>
+        Card icon
+      </Typography>
+      <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(88px, 1fr))" gap={1}>
+        {options.map((o) => {
+          const selected = value === o.id;
+          return (
+            <Box
+              key={o.id || "auto"}
+              component="button"
+              type="button"
+              onClick={() => onChange(o.id)}
+              aria-pressed={selected}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 0.5,
+                minHeight: 84,
+                p: 1,
+                font: "inherit",
+                cursor: "pointer",
+                borderRadius: 2,
+                border: "1px solid",
+                borderColor: selected ? "primary.main" : "divider",
+                bgcolor: selected ? "rgba(196,155,99,0.12)" : "transparent",
+                color: selected ? "primary.main" : "text.secondary",
+                transition: `border-color 0.25s ${EASE}, background-color 0.25s ${EASE}, color 0.25s ${EASE}`,
+                "&:hover": { borderColor: "secondary.light", color: "primary.light" },
+              }}
+            >
+              {o.id ? (
+                <Box sx={{ lineHeight: 0 }}>
+                  <CoffeeIcon type={o.id as IconName} size={36} />
+                </Box>
+              ) : (
+                <Typography sx={{ fontSize: "1.3rem", lineHeight: "36px" }} aria-hidden="true">
+                  ✦
+                </Typography>
+              )}
+              <Typography variant="caption" sx={{ lineHeight: 1.2, textAlign: "center" }}>
+                {o.label}
+              </Typography>
+            </Box>
+          );
+        })}
+      </Box>
+    </Box>
+  );
+}
+
+// ── Master/detail editor (list on the left, one open record on the right) ────
+
+function MasterDetail<T>({
+  noun,
+  items,
+  getTitle,
+  getThumb,
+  onAdd,
+  onRemove,
+  onMove,
+  renderEditor,
+  renderPreview,
+}: {
+  noun: string;
+  items: T[];
+  getTitle: (item: T, i: number) => string;
+  getThumb: (item: T, i: number) => ReactNode;
+  onAdd: () => void;
+  onRemove: (i: number) => void;
+  onMove: (i: number, dir: -1 | 1) => void;
+  renderEditor: (item: T, i: number) => ReactNode;
+  renderPreview: (item: T, i: number) => ReactNode;
+}) {
+  const [selected, setSelected] = useState(0);
+
+  const index = Math.min(selected, Math.max(items.length - 1, 0));
+  const current = items[index];
+
+  return (
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", lg: "minmax(260px, 320px) 1fr" },
+        gap: 3,
+        alignItems: "start",
+      }}
+    >
+      {/* List */}
+      <Box sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2, overflow: "hidden" }}>
+        <Box component="ul" aria-label={`${noun}s`} sx={{ listStyle: "none", m: 0, p: 0, maxHeight: { lg: "60vh" }, overflowY: "auto" }}>
+          {items.map((item, i) => {
+            const active = i === index;
+            return (
+              <Box
+                component="li"
+                key={i}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  borderBottom: "1px solid",
+                  borderColor: "divider",
+                  bgcolor: active ? "rgba(196,155,99,0.1)" : "transparent",
+                  boxShadow: active ? (t) => `inset 3px 0 0 ${t.palette.primary.main}` : "none",
+                  "&:last-of-type": { borderBottom: 0 },
+                }}
+              >
+                <Box
+                  component="button"
+                  type="button"
+                  onClick={() => setSelected(i)}
+                  aria-current={active ? "true" : undefined}
+                  sx={{
+                    flex: 1,
+                    minWidth: 0,
+                    minHeight: 56,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.5,
+                    px: 2,
+                    py: 1,
+                    font: "inherit",
+                    textAlign: "left",
+                    cursor: "pointer",
+                    border: 0,
+                    bgcolor: "transparent",
+                    color: active ? "text.primary" : "text.secondary",
+                    transition: `color 0.25s ${EASE}, background-color 0.25s ${EASE}`,
+                    "&:hover": { color: "text.primary", bgcolor: "rgba(161,103,69,0.08)" },
+                  }}
+                >
+                  <Box sx={{ lineHeight: 0, flexShrink: 0 }}>{getThumb(item, i)}</Box>
+                  <Typography variant="body2" noWrap fontWeight={active ? 600 : 400}>
+                    {getTitle(item, i) || `Untitled ${noun}`}
+                  </Typography>
+                </Box>
+                {active && (
+                  <Box sx={{ display: "flex", pr: 0.5 }}>
+                    <Tooltip title="Move up">
+                      <span>
+                        <IconButton size="small" aria-label={`Move ${noun} up`} disabled={i === 0} onClick={() => onMove(i, -1)}>
+                          <ArrowUpwardIcon fontSize="small" />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Tooltip title="Move down">
+                      <span>
+                        <IconButton size="small" aria-label={`Move ${noun} down`} disabled={i === items.length - 1} onClick={() => onMove(i, 1)}>
+                          <ArrowDownwardIcon fontSize="small" />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  </Box>
+                )}
+              </Box>
+            );
+          })}
+          {items.length === 0 && (
+            <Typography variant="body2" color="text.secondary" sx={{ p: 3, textAlign: "center" }}>
+              No {noun}s yet. Add the first one.
+            </Typography>
+          )}
+        </Box>
+        <Divider />
+        <Button
+          fullWidth
+          startIcon={<AddIcon />}
+          onClick={() => {
+            onAdd();
+            setSelected(items.length); // open the new record so the user can fill it in
+          }}
+          sx={{ minHeight: 48, borderRadius: 0 }}>
+          Add {noun}
+        </Button>
+      </Box>
+
+      {/* Editor + live preview */}
+      {current && (
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", xl: "minmax(0, 1fr) minmax(260px, 340px)" },
+            gap: 4,
+            alignItems: "start",
+          }}
+        >
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Typography variant="h6" sx={{ fontSize: "1.1rem" }}>
+                Edit {noun}
+              </Typography>
+              <Tooltip title={`Remove ${noun}`}>
+                <IconButton
+                  aria-label={`Remove ${noun}`}
+                  onClick={() => onRemove(index)}
+                  sx={{ color: "text.secondary", "&:hover": { color: "error.main" } }}
+                >
+                  <DeleteOutlineIcon />
+                </IconButton>
+              </Tooltip>
+            </Box>
+            {renderEditor(current, index)}
+          </Box>
+          <Box sx={{ position: { xl: "sticky" }, top: { xl: 190 } }}>
+            <Typography variant="body2" color="text.secondary" mb={1.5}>
+              Preview
+            </Typography>
+            {renderPreview(current, index)}
+          </Box>
+        </Box>
+      )}
+    </Box>
+  );
+}
+
 // ── Main component ───────────────────────────────────────────────────────────
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [data, setData] = useState<SiteData | null>(null);
+  const [saved, setSaved] = useState<SiteData | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [section, setSection] = useState<SectionKey>("about");
+  const [undo, setUndo] = useState<{ label: string; snapshot: SiteData } | null>(null);
 
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/details?id=1");
+        const res = await fetch("/api/details");
         if (res.ok) {
           const json = await res.json();
-          setData(json.pjson ?? json);
+          const doc = (json.pjson ?? json) as SiteData;
+          setData(doc);
+          setSaved(doc);
         } else if (res.status === 404) {
-          const createRes = await fetch("/api/details?id=1", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(defaultData),
-          });
+          // The server seeds the row from the bundled JSON.
+          const createRes = await fetch("/api/details", { method: "POST" });
           if (createRes.ok) {
             setData(defaultData as SiteData);
+            setSaved(defaultData as SiteData);
           } else {
             setFetchError("Failed to create initial data.");
           }
@@ -127,108 +413,240 @@ export default function AdminDashboard() {
     load();
   }, []);
 
-  async function handleSave() {
-    if (!data) return;
+  // Which sections differ from what is stored.
+  const dirty = useMemo(() => {
+    const out = new Set<SectionKey>();
+    if (!data || !saved) return out;
+    for (const { key } of SECTIONS) {
+      if (JSON.stringify(data[key]) !== JSON.stringify(saved[key])) out.add(key);
+    }
+    return out;
+  }, [data, saved]);
+  const hasChanges = dirty.size > 0;
+
+  const handleSave = useCallback(async () => {
+    if (!data || saveStatus === "saving") return;
     setSaveStatus("saving");
     try {
-      const res = await fetch("/api/details?id=1", {
+      const res = await fetch("/api/details", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pjson: data }),
+        body: JSON.stringify({ pjson: withoutLegacyStats(data) }),
       });
+      if (res.ok) setSaved(data);
       setSaveStatus(res.ok ? "saved" : "error");
     } catch {
       setSaveStatus("error");
     }
-  }
+  }, [data, saveStatus]);
 
-  // ── Updaters ───────────────────────────────────────────────────────────────
+  // Ctrl/Cmd+S saves; leaving with unsaved edits asks first.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        if (hasChanges) handleSave();
+      }
+    }
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      if (hasChanges) e.preventDefault();
+    }
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("beforeunload", onBeforeUnload);
+    };
+  }, [hasChanges, handleSave]);
 
-  function setSocials(field: keyof SiteData["socials"], value: string) {
-    setData((d) => d && { ...d, socials: { ...d.socials, [field]: value } });
+  function update(fn: (d: SiteData) => SiteData) {
+    setData((d) => (d ? fn(d) : d));
     setSaveStatus("idle");
   }
 
-  function setAbout(value: string) {
-    setData((d) => d && { ...d, about: value });
-    setSaveStatus("idle");
+  function discard() {
+    if (saved) update(() => saved);
   }
 
-  function setStat(index: number, field: keyof Stat, value: string) {
-    setData((d) => {
-      if (!d) return d;
-      const stats = d.stats.map((s, i) =>
-        i !== index
-          ? s
-          : { ...s, [field]: field === "value" ? Number(value) : value || undefined }
-      );
-      return { ...d, stats };
+  function downloadJson() {
+    if (!data) return;
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "website-details.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ── List helpers (one set for projects and team) ───────────────────────────
+
+  function setItem<K extends ListKey>(key: K, index: number, field: string, value: string) {
+    update((d) => ({
+      ...d,
+      [key]: (d[key] as object[]).map((item, i) => (i !== index ? item : { ...item, [field]: value })),
+    }));
+  }
+
+  function addItem(key: ListKey) {
+    const blank = key === "team"
+      ? { name: "", role: "", bio: "", avatarSrc: "", github: "", website: "" }
+      : { title: "", body: "", href: "", icon: "" };
+    update((d) => ({ ...d, [key]: [...(d[key] as object[]), blank] }));
+  }
+
+  function removeItem(key: ListKey, index: number, label: string) {
+    if (!data) return;
+    setUndo({ label, snapshot: data });
+    update((d) => ({
+      ...d,
+      [key]: pinAutoIcons(key, d[key] as object[]).filter((_, i) => i !== index),
+    }));
+  }
+
+  function moveItem(key: ListKey, index: number, dir: -1 | 1) {
+    update((d) => {
+      const list = [...pinAutoIcons(key, d[key] as object[])];
+      const to = index + dir;
+      if (to < 0 || to >= list.length) return d;
+      [list[index], list[to]] = [list[to], list[index]];
+      return { ...d, [key]: list };
     });
-    setSaveStatus("idle");
   }
 
-  function addStat() {
-    setData((d) => d && { ...d, stats: [...d.stats, { label: "", value: 0 }] });
-    setSaveStatus("idle");
-  }
+  // ── Section bodies ─────────────────────────────────────────────────────────
 
-  function removeStat(index: number) {
-    setData((d) => d && { ...d, stats: d.stats.filter((_, i) => i !== index) });
-    setSaveStatus("idle");
-  }
-
-  function setTeamMember(index: number, field: keyof TeamMember, value: string) {
-    setData((d) => {
-      if (!d) return d;
-      const team = d.team.map((m, i) => (i !== index ? m : { ...m, [field]: value }));
-      return { ...d, team };
-    });
-    setSaveStatus("idle");
-  }
-
-  function addTeamMember() {
-    setData(
-      (d) =>
-        d && {
-          ...d,
-          team: [...d.team, { name: "", role: "", bio: "", avatarSrc: "", github: "", website: "" }],
-        }
+  function renderProjects(key: "live_projects" | "projects") {
+    if (!data) return null;
+    return (
+      <MasterDetail<Project>
+        noun="project"
+        items={data[key]}
+        getTitle={(p) => p.title}
+        getThumb={(p, i) => <CoffeeIcon type={(p.icon || autoIconIndex(key, i)) as IconName | number} size={28} />}
+        onAdd={() => addItem(key)}
+        onRemove={(i) => removeItem(key, i, "Project removed")}
+        onMove={(i, dir) => moveItem(key, i, dir)}
+        renderEditor={(p, i) => (
+          <>
+            <Field label="Title" value={p.title} onChange={(v) => setItem(key, i, "title", v)} />
+            <Field label="Description" value={p.body} onChange={(v) => setItem(key, i, "body", v)} multiline minRows={3} />
+            <Field
+              label="Link"
+              value={p.href ?? ""}
+              onChange={(v) => setItem(key, i, "href", v)}
+              placeholder="https://"
+              helper="Optional. When set, the whole card opens this link in a new tab."
+            />
+            <IconPicker value={p.icon ?? ""} onChange={(v) => setItem(key, i, "icon", v)} />
+          </>
+        )}
+        renderPreview={(p, i) => (
+          <ContentCard
+            title={p.title || "Untitled project"}
+            body={p.body}
+            href={p.href || undefined}
+            icon={(p.icon || autoIconIndex(key, i)) as IconName | number}
+          />
+        )}
+      />
     );
-    setSaveStatus("idle");
   }
 
-  function removeTeamMember(index: number) {
-    setData((d) => d && { ...d, team: d.team.filter((_, i) => i !== index) });
-    setSaveStatus("idle");
-  }
-
-  function setProject(section: "live_projects" | "projects", index: number, field: keyof Project, value: string) {
-    setData((d) => {
-      if (!d) return d;
-      const list = d[section].map((p, i) => (i !== index ? p : { ...p, [field]: value }));
-      return { ...d, [section]: list };
-    });
-    setSaveStatus("idle");
-  }
-
-  function addProject(section: "live_projects" | "projects") {
-    setData(
-      (d) =>
-        d && { ...d, [section]: [...d[section], { title: "", body: "", cta: "", href: "" }] }
-    );
-    setSaveStatus("idle");
-  }
-
-  function removeProject(section: "live_projects" | "projects", index: number) {
-    setData((d) => d && { ...d, [section]: d[section].filter((_, i) => i !== index) });
-    setSaveStatus("idle");
+  function renderSection() {
+    if (!data) return null;
+    switch (section) {
+      case "about":
+        return (
+          <Box sx={{ maxWidth: 760, display: "flex", flexDirection: "column", gap: 1 }}>
+            <Field label="About text" value={data.about} onChange={(v) => update((d) => ({ ...d, about: v }))} multiline minRows={10} />
+            <Typography variant="caption" color="text.secondary" sx={{ alignSelf: "flex-end" }}>
+              {data.about.length} characters
+            </Typography>
+          </Box>
+        );
+      case "live_projects":
+        return renderProjects("live_projects");
+      case "projects":
+        return renderProjects("projects");
+      case "team":
+        return (
+          <MasterDetail<TeamMember>
+            noun="member"
+            items={data.team}
+            getTitle={(m) => m.name}
+            getThumb={(m) => (
+              <Box
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  bgcolor: "secondary.dark",
+                  backgroundImage: m.avatarSrc ? `url(${m.avatarSrc})` : "none",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center top",
+                }}
+              />
+            )}
+            onAdd={() => addItem("team")}
+            onRemove={(i) => removeItem("team", i, "Member removed")}
+            onMove={(i, dir) => moveItem("team", i, dir)}
+            renderEditor={(m, i) => (
+              <>
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 2 }}>
+                  <Field label="Name" value={m.name} onChange={(v) => setItem("team", i, "name", v)} />
+                  <Field label="Role" value={m.role} onChange={(v) => setItem("team", i, "role", v)} />
+                </Box>
+                <Field label="Bio" value={m.bio} onChange={(v) => setItem("team", i, "bio", v)} multiline minRows={4} />
+                <Field
+                  label="Photo path"
+                  value={m.avatarSrc}
+                  onChange={(v) => setItem("team", i, "avatarSrc", v)}
+                  placeholder="/name-profile.jpg"
+                  helper="A file in the public folder."
+                />
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 2 }}>
+                  <Field label="GitHub URL" value={m.github} onChange={(v) => setItem("team", i, "github", v)} />
+                  <Field label="Website URL" value={m.website} onChange={(v) => setItem("team", i, "website", v)} />
+                </Box>
+              </>
+            )}
+            renderPreview={(m) => (
+              <ProfileCard
+                avatarSrc={m.avatarSrc || undefined}
+                name={m.name || "Name"}
+                role={m.role}
+                bio={m.bio}
+                github={m.github || undefined}
+                website={m.website || undefined}
+              />
+            )}
+          />
+        );
+      case "socials":
+        return (
+          <Box sx={{ maxWidth: 520, display: "flex", flexDirection: "column", gap: 2.5 }}>
+            <Field
+              label="GitHub URL"
+              value={data.socials.github}
+              onChange={(v) => update((d) => ({ ...d, socials: { ...d.socials, github: v } }))}
+            />
+            <Field
+              label="Email"
+              value={data.socials.email}
+              onChange={(v) => update((d) => ({ ...d, socials: { ...d.socials, email: v } }))}
+              helper="Shown as the mail icon in the footer."
+            />
+          </Box>
+        );
+    }
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
-      <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center">
+      <Box minHeight="60vh" display="flex" alignItems="center" justifyContent="center">
         <CircularProgress />
       </Box>
     );
@@ -244,267 +662,174 @@ export default function AdminDashboard() {
 
   if (!data) return null;
 
+  const active = SECTIONS.find((s) => s.key === section)!;
+
   return (
-    <Box maxWidth={900} mx="auto" px={3} py={6}>
-      {/* Header */}
-      <Box mb={4}>
-        <Typography variant="h4" fontWeight={700} mb={0.5}>
-          Admin Dashboard
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Edit site content, then save.
-        </Typography>
-      </Box>
-
-      {/* About */}
-      <Accordion defaultExpanded disableGutters elevation={2} sx={{ mb: 1.5, borderRadius: "8px !important", "&:before": { display: "none" } }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography fontWeight={600}>About</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Field label="About text" value={data.about} onChange={setAbout} multiline />
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Live Projects */}
-      <Accordion disableGutters elevation={2} sx={{ mb: 1.5, borderRadius: "8px !important", "&:before": { display: "none" } }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography fontWeight={600}>Live Projects</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ ml: 1, alignSelf: "center" }}>
-            ({data.live_projects.length})
+    <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, md: 4 }, pb: 10 }}>
+      {/* Sticky action bar */}
+      <Box
+        sx={{
+          position: "sticky",
+          top: 72,
+          zIndex: 5,
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          flexWrap: "wrap",
+          py: 1.5,
+          mb: 3,
+          bgcolor: "rgba(13,13,13,0.85)",
+          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        <Box sx={{ flex: 1, minWidth: 180 }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, fontSize: { xs: "1.25rem", md: "1.5rem" } }}>
+            Site content
           </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <ProjectsList
-            items={data.live_projects}
-            onAdd={() => addProject("live_projects")}
-            onRemove={(i) => removeProject("live_projects", i)}
-            onChange={(i, field, v) => setProject("live_projects", i, field, v)}
-          />
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Projects */}
-      <Accordion disableGutters elevation={2} sx={{ mb: 1.5, borderRadius: "8px !important", "&:before": { display: "none" } }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography fontWeight={600}>Projects</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ ml: 1, alignSelf: "center" }}>
-            ({data.projects.length})
+          <Typography variant="caption" color="text.secondary" role="status" aria-live="polite">
+            {saveStatus === "saving"
+              ? "Saving…"
+              : saveStatus === "error"
+                ? "Save failed. Your edits are still here; try again."
+                : hasChanges
+                  ? `Unsaved changes in ${dirty.size} ${dirty.size === 1 ? "section" : "sections"}`
+                  : saveStatus === "saved"
+                    ? "All changes saved"
+                    : "Up to date"}
           </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <ProjectsList
-            items={data.projects}
-            onAdd={() => addProject("projects")}
-            onRemove={(i) => removeProject("projects", i)}
-            onChange={(i, field, v) => setProject("projects", i, field, v)}
-          />
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Stats */}
-      <Accordion disableGutters elevation={2} sx={{ mb: 1.5, borderRadius: "8px !important", "&:before": { display: "none" } }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography fontWeight={600}>Stats</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ ml: 1, alignSelf: "center" }}>
-            ({data.stats.length})
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Box display="flex" flexDirection="column" gap={2}>
-            {data.stats.map((stat, i) => (
-              <Box key={i}>
-                {i > 0 && <Divider sx={{ mb: 2 }} />}
-                <Box display="flex" alignItems="center" gap={1}>
-                  <Box flex={1} display="flex" gap={2}>
-                    <Field label="Label" value={stat.label} onChange={(v) => setStat(i, "label", v)} />
-                    <Field label="Value" value={stat.value} onChange={(v) => setStat(i, "value", v)} type="number" width={120} />
-                    <Field label="Suffix" value={stat.suffix ?? ""} onChange={(v) => setStat(i, "suffix", v)} width={120} />
-                  </Box>
-                  <Tooltip title="Remove">
-                    <IconButton size="small" onClick={() => removeStat(i)}>
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </Box>
-            ))}
-            <Box>
-              <Button size="small" startIcon={<AddIcon />} onClick={addStat}>
-                Add stat
-              </Button>
-            </Box>
-          </Box>
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Team */}
-      <Accordion disableGutters elevation={2} sx={{ mb: 1.5, borderRadius: "8px !important", "&:before": { display: "none" } }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography fontWeight={600}>Team</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ ml: 1, alignSelf: "center" }}>
-            ({data.team.length})
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Box display="flex" flexDirection="column" gap={1}>
-            {data.team.map((member, i) => (
-              <Box key={i} display="flex" alignItems="flex-start" gap={1}>
-              <Accordion disableGutters elevation={1} sx={{ flex: 1, borderRadius: "6px !important", "&:before": { display: "none" } }}>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography variant="body2" fontWeight={600}>
-                    {member.name || `Member ${i + 1}`}
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Box display="flex" flexDirection="column" gap={2}>
-                    <Box display="flex" gap={2}>
-                      <Field label="Name" value={member.name} onChange={(v) => setTeamMember(i, "name", v)} />
-                      <Field label="Role" value={member.role} onChange={(v) => setTeamMember(i, "role", v)} />
-                    </Box>
-                    <Field label="Bio" value={member.bio} onChange={(v) => setTeamMember(i, "bio", v)} multiline />
-                    <Box display="flex" gap={2}>
-                      <Field label="Avatar path" value={member.avatarSrc} onChange={(v) => setTeamMember(i, "avatarSrc", v)} />
-                      <Field label="GitHub URL" value={member.github} onChange={(v) => setTeamMember(i, "github", v)} />
-                      <Field label="Website URL" value={member.website} onChange={(v) => setTeamMember(i, "website", v)} />
-                    </Box>
-                  </Box>
-                </AccordionDetails>
-              </Accordion>
-              <Tooltip title="Remove">
-                <IconButton size="small" onClick={() => removeTeamMember(i)} sx={{ mt: 0.5 }}>
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              </Box>
-            ))}
-            <Box mt={1}>
-              <Button size="small" startIcon={<AddIcon />} onClick={addTeamMember}>
-                Add member
-              </Button>
-            </Box>
-          </Box>
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Socials */}
-      <Accordion disableGutters elevation={2} sx={{ mb: 1.5, borderRadius: "8px !important", "&:before": { display: "none" } }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography fontWeight={600}>Socials</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Box display="flex" flexDirection="column" gap={2}>
-            <Field label="GitHub URL" value={data.socials.github} onChange={(v) => setSocials("github", v)} />
-            <Field label="Email" value={data.socials.email} onChange={(v) => setSocials("email", v)} />
-          </Box>
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Bottom save */}
-      <Box mt={4} display="flex" justifyContent="space-between" alignItems="center" gap={2}>
-        <Button
-          variant="outlined"
-          startIcon={<DownloadIcon />}
-          onClick={() => {
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "website-details.json";
-            a.click();
-            URL.revokeObjectURL(url);
-          }}
-        >
-          Download JSON
+        </Box>
+        <Tooltip title="Download JSON">
+          <IconButton aria-label="Download JSON" onClick={downloadJson}>
+            <DownloadIcon />
+          </IconButton>
+        </Tooltip>
+        {onLogout && (
+          <Tooltip title="Log out">
+            <IconButton aria-label="Log out" onClick={onLogout}>
+              <LogoutIcon />
+            </IconButton>
+          </Tooltip>
+        )}
+        <Button onClick={discard} disabled={!hasChanges || saveStatus === "saving"}>
+          Discard changes
         </Button>
-        <Box display="flex" alignItems="center" gap={2}>
-        {saveStatus === "saved" && <Alert severity="success" sx={{ py: 0 }}>Saved!</Alert>}
-        {saveStatus === "error" && <Alert severity="error" sx={{ py: 0 }}>Save failed.</Alert>}
         <Button
           variant="contained"
           color="primary"
           onClick={handleSave}
-          disabled={saveStatus === "saving"}
+          disabled={!hasChanges || saveStatus === "saving"}
           startIcon={saveStatus === "saving" ? <CircularProgress size={16} color="inherit" /> : undefined}
         >
-          {saveStatus === "saving" ? "Saving…" : "Save"}
+          {saveStatus === "saving" ? "Saving…" : "Save changes"}
         </Button>
-        </Box>
       </Box>
-    </Box>
-  );
-}
 
-// ── ProjectsList ─────────────────────────────────────────────────────────────
+      {saveStatus === "error" && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          Could not save. Check your connection and try again.
+        </Alert>
+      )}
 
-function ProjectsList({
-  items,
-  onAdd,
-  onRemove,
-  onChange,
-}: {
-  items: Project[];
-  onAdd: () => void;
-  onRemove: (i: number) => void;
-  onChange: (i: number, field: keyof Project, value: string) => void;
-}) {
-  return (
-    <Box display="flex" flexDirection="column" gap={1}>
-      {items.map((project, i) => (
-        <Box key={i} display="flex" alignItems="flex-start" gap={1}>
-        <Accordion disableGutters elevation={1} sx={{ flex: 1, borderRadius: "6px !important", "&:before": { display: "none" } }}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="body2" fontWeight={600}>
-              {project.title || `Project ${i + 1}`}
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "220px 1fr" }, gap: { xs: 2, md: 5 }, alignItems: "start" }}>
+        {/* Section nav: left rail on desktop, scrolling tabs on phones */}
+        <Box
+          component="nav"
+          aria-label="Content sections"
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "row", md: "column" },
+            gap: 0.5,
+            overflowX: { xs: "auto", md: "visible" },
+            position: { md: "sticky" },
+            top: { md: 190 },
+          }}
+        >
+          {SECTIONS.map((s) => {
+            const selected = s.key === section;
+            const count = sectionCount(data, s.key);
+            return (
+              <Box
+                key={s.key}
+                component="button"
+                type="button"
+                onClick={() => setSection(s.key)}
+                aria-current={selected ? "page" : undefined}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  minHeight: 44,
+                  px: 1.5,
+                  py: 1,
+                  flexShrink: 0,
+                  font: "inherit",
+                  fontSize: "0.9rem",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  border: 0,
+                  borderRadius: 2,
+                  whiteSpace: "nowrap",
+                  bgcolor: selected ? "rgba(196,155,99,0.12)" : "transparent",
+                  color: selected ? "primary.main" : "text.secondary",
+                  transition: `color 0.25s ${EASE}, background-color 0.25s ${EASE}`,
+                  "&:hover": { color: "primary.light", bgcolor: "rgba(161,103,69,0.08)" },
+                }}
+              >
+                {s.icon}
+                <Box component="span" sx={{ flex: 1 }}>
+                  {s.label}
+                </Box>
+                {count !== null && (
+                  <Typography component="span" variant="caption" color="text.secondary">
+                    {count}
+                  </Typography>
+                )}
+                {dirty.has(s.key) && (
+                  <Box
+                    component="span"
+                    role="img"
+                    aria-label="Unsaved changes"
+                    sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "primary.main", flexShrink: 0 }}
+                  />
+                )}
+              </Box>
+            );
+          })}
+        </Box>
+
+        {/* Section content */}
+        <Box component="section" aria-label={active.label} sx={{ minWidth: 0 }}>
+          <Box mb={3}>
+            <Typography variant="h4" sx={{ fontSize: { xs: "1.5rem", md: "2rem" }, fontWeight: 700 }}>
+              {active.label}
             </Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Box display="flex" flexDirection="column" gap={2}>
-              <TextField
-                label="Title"
-                value={project.title}
-                onChange={(e) => onChange(i, "title", e.target.value)}
-                fullWidth
-                size="small"
-              />
-              <TextField
-                label="Body"
-                value={project.body}
-                onChange={(e) => onChange(i, "body", e.target.value)}
-                fullWidth
-                size="small"
-                multiline
-                minRows={2}
-              />
-              <TextField
-                label="Link (href, optional)"
-                value={project.href ?? ""}
-                onChange={(e) => onChange(i, "href", e.target.value)}
-                fullWidth
-                size="small"
-              />
-              <TextField
-                label="CTA label"
-                value={project.cta}
-                onChange={(e) => onChange(i, "cta", e.target.value)}
-                fullWidth
-                size="small"
-              />
-            </Box>
-          </AccordionDetails>
-        </Accordion>
-        <Tooltip title="Remove">
-          <IconButton size="small" onClick={() => onRemove(i)} sx={{ mt: 0.5 }}>
-            <DeleteIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+            <Typography variant="body2" color="text.secondary">
+              {active.hint}
+            </Typography>
+          </Box>
+          {renderSection()}
         </Box>
-      ))}
-      <Box mt={1}>
-        <Button size="small" startIcon={<AddIcon />} onClick={onAdd}>
-          Add project
-        </Button>
       </Box>
+
+      <Snackbar
+        open={!!undo}
+        autoHideDuration={6000}
+        onClose={(_, reason) => reason !== "clickaway" && setUndo(null)}
+        message={undo?.label}
+        action={
+          <Button
+            size="small"
+            onClick={() => {
+              if (undo) update(() => undo.snapshot);
+              setUndo(null);
+            }}
+          >
+            Undo
+          </Button>
+        }
+      />
     </Box>
   );
 }
