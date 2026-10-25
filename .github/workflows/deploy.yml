@@ -15,7 +15,7 @@ jobs:
 
       - name: Deploy on server
         run: |
-          cd /srv/apps/Web-MediaList
+          cd /srv/apps/Website-CoffeeCoders
           git fetch origin main
           git reset --hard origin/main
 
